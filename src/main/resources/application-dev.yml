@@ -1,0 +1,31 @@
+plantsever:
+  uploadPath: /var/lib/influx/data
+  username: admin
+  password: 111111
+  sysname: 工厂设备云端收集
+  corpname: akyc
+logging:
+  level:
+    root: error
+    com.plantserver: debug
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    # 连接超时时间（毫秒）
+    timeout: 10000
+    jedis:
+      pool:
+        # 连接池中的最大空闲连接
+        max-idle: 8
+        # 连接池中的最小空闲连接
+        min-idle: 10
+        # 连接池最大连接数（使用负值表示没有限制）
+        max-active: 100
+        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: -1
+  influx:
+    url: http://127.0.0.1:8086
+    user: root
+    password: root

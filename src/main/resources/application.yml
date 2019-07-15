@@ -1,0 +1,31 @@
+server:
+  session-timeout: 1800
+  #    tomcat:
+  #        max-threads: 1000
+  #        min-spare-threads: 30
+  port: 8189
+#    uri-encoding: utf-8
+spring:
+  profiles:
+    active: dev
+  activemq:
+    broker-url: tcp://127.0.0.1:61616
+    user: admin
+    password: admin
+    queue: hp.queue
+    pool:
+      enabled: false #无超时时间
+      maxConnections: 2
+      idleTimeout: 30000
+    packages:
+      trust-all: true
+    in-memory: false
+  jms:
+    pub-sub-domain: false    #(为true时是topic模式，为false是queue模式)
+  mqtt:
+    url: tcp://127.0.0.1:1883
+    client:
+      id: plantserver
+    default:
+      topic: HPtopic
+    completionTimeout: 3000
