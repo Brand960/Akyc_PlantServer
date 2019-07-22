@@ -10,7 +10,7 @@
     </parent>
     <groupId>com</groupId>
     <artifactId>plantserver</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.5-SNAPSHOT</version>
     <name>plantserver</name>
     <description>Demo project for PlantServer</description>
 
