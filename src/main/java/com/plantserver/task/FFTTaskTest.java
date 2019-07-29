@@ -22,35 +22,41 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class FFTTaskTest {
 
-    private static int SAMPLE = 4096;
+    private static int SAMPLE = 2048;
 
-    private static int PEAK_OFFSET = 2;
+    private static int PEAK_OFFSET = 9;
 
-    private static int RECMAX = 15000;
-    private static int RECSTD = 1188;
+    private static int RECMAX = 1;
+    private static int RECSTD = 1100;
     private static int RECMIN = 0;
 
     private static InfluxDB influxDB = InfluxDBFactory.connect("http://60.205.207.115:8086", "root", "root");
 
-    @Scheduled(cron = "0 0/5 * * * *")
-    public void caculFFT() {
+    @Scheduled(cron = "0/5 * * * * *")
+    public void caculFFT() throws IOException, ParseException {
         System.out.println("INFO:" + new Date() + "开始运行任务");
         SimpleDateFormat format = new SimpleDateFormat("yyyy-M-ddHH:mm:ss");
         influxDB.setDatabase("plantsurv_web");
-        List<List<Object>> rawdata = influxDB.query(new Query("SELECT \"Ay\"-Ax+abs(Ax+11100)+abs(Ay+520)+abs(Az-18900) " +
+        List<List<Object>> rawdata = influxDB.query(new Query("SELECT \"Ax\"-Ax+abs(Ax-4950)+abs(Ay+312)+abs(Az-15730) " +
                 "FROM \"pt_new_255\" " +
                 "WHERE (\"Ay\" < 0.0 OR \"Ay\" > 0.0) " +
-                "ORDER BY DESC LIMIT "+SAMPLE))
+                "ORDER BY DESC LIMIT " + SAMPLE))
                 .getResults().get(0)
                 .getSeries().get(0)
                 .getValues();
+        Date latestFFTdata = format.parse((influxDB.query(new Query("SELECT \"Ay\"" +
+                "FROM \"pt_test_fft\" "
+                + "ORDER BY DESC LIMIT 1"))
+                .getResults().get(0)
+                .getSeries().get(0)
+                .getValues().get(0).get(0)).toString().replace("T", ""));
         // 初始化2次幂容量的数组
-//        int j = 1;
+        //        int j = 1;
         int size = rawdata.size();
-//        while (j < size) {
-//            j *= 2;
-//        }
-//        Complex[] data = new Complex[j];
+        //        while (j < size) {
+        //            j *= 2;
+        //        }
+        //        Complex[] data = new Complex[j];
         Complex[] data = new Complex[SAMPLE];
         // 填充数据和补0
         int i = 0;
@@ -58,10 +64,10 @@ public class FFTTaskTest {
             data[i] = new Complex(Math.abs((double) tmp.get(1)), 0);
             i++;
         }
-//        while (j > i) {
-//            data[i] = new Complex(0, 0);
-//            i++;
-//        }
+        //        while (j > i) {
+        //            data[i] = new Complex(0, 0);
+        //            i++;
+        //        }
         // FFT
         Complex[] result = FFT.fft(data);
         // 梯度下降找局部最小，之后归0
@@ -70,47 +76,93 @@ public class FFTTaskTest {
         int offsetLocalMinIndex = getLocalMinIndex(result, ThriMaxIndex, PEAK_OFFSET);
         System.out.println("局部最小点位置：" + offsetLocalMinIndex);
         for (int f = 0; f < result.length; f++) {
-            if (f > 8) {
+            if (f > 24) {
                 result[f] = new Complex(0, 0);
             }
         }
         // IFFT
         Complex[] finalRes = FFT.ifft(result);
+        BatchPoints batchPoints1 = BatchPoints.database("plantsurv_web").build();
+        try {
+            for (int p = 0; p < size; p++) {
+                if (format.parse(rawdata.get(p).get(0).toString()
+                        .replace("T", "")).compareTo(latestFFTdata) < 0) {
+                    continue;
+                }
+                Point tmpPoint1 = Point.measurement("pt_test_fftpre")
+                        .time(format.parse(rawdata.get(p).get(0).toString()
+                                        .replace("T", ""))
+                                        .getTime() + 8 * 60 * 60 * 1000L,
+                                TimeUnit.MILLISECONDS)
+                        .tag("device", "996")
+                        .addField("Ay", finalRes[p].re())
+                        .build();
+                batchPoints1.point(tmpPoint1);
+            }
+            influxDB.write(batchPoints1);
+        } catch (ParseException e) {
+            InfluxDB influxDB3 = InfluxDBFactory.connect("http://172.17.0.2:8086", "root", "root");
+            influxDB3.write(batchPoints1);
+            influxDB3.close();
+            e.getMessage();
+        }
         // 先获得极值点,转成矩形波
         List<Integer> exPoints = getExPoints(finalRes, size);
         System.out.println("发现的极值点：" + exPoints);
-        Complex[] resultRec = turnRecWaves(finalRes, exPoints, size);
+        //Complex[] resultRec = turnRecWaves(finalRes, exPoints, size);
+
+        for (int p = 0; p < finalRes.length; p++) {
+            if (finalRes[p].abs() > 9500) {
+                finalRes[p] = new Complex(RECMAX, 0);
+            } else {
+                try {
+                    if (finalRes[p + 1].abs() > 9500 || finalRes[p + 2].abs() > 9500) {
+                        finalRes[p] = new Complex(RECMAX, 0);
+                        continue;
+                    }
+                    finalRes[p] = new Complex(RECMIN, 0);
+                } catch (Exception e) {
+                    e.getMessage();
+                }
+            }
+        }
+
         // 写入INFLUX
-        BatchPoints batchPoints = BatchPoints.database("plantsurv_web").build();
+        BatchPoints batchPoints2 = BatchPoints.database("plantsurv_web").build();
         try {
             for (int p = 0; p < size; p++) {
+                if (format.parse(rawdata.get(p).get(0).toString()
+                        .replace("T", "")).compareTo(latestFFTdata) < 0) {
+                    continue;
+                }
                 Point tmpPoint = Point.measurement("pt_test_fft")
                         .time(format.parse(rawdata.get(p).get(0).toString()
                                         .replace("T", ""))
                                         .getTime() + 8 * 60 * 60 * 1000L,
                                 TimeUnit.MILLISECONDS)
                         .tag("device", "996")
-                        .addField("Ay", resultRec[p].re())
+                        //resultRec->finalRes
+                        .addField("Ay", finalRes[p].re())
                         .build();
-                batchPoints.point(tmpPoint);
+                batchPoints2.point(tmpPoint);
             }
-            influxDB.write(batchPoints);
-        } catch (ParseException e) {
+            influxDB.write(batchPoints2);
+        } catch (
+                ParseException e) {
             InfluxDB influxDB2 = InfluxDBFactory.connect("http://172.17.0.2:8086", "root", "root");
-            influxDB2.write(batchPoints);
+            influxDB2.write(batchPoints2);
             influxDB2.close();
             e.getMessage();
         }
-        influxDB.close();
         System.out.println("OK");
     }
 
-    static void export2File(Complex[] result,String time) throws IOException {
-        File f = new File("/home/yue/Desktop/FFT/"+time+".txt");
-        if(!f.exists()){
+    static void export2File(Complex[] result) throws IOException {
+        File f = new File("/home/yue/Desktop/FFT/" + new Date().toString() + ".txt");
+        if (!f.exists()) {
             f.createNewFile();
         }
-        BufferedWriter fw = new BufferedWriter(new FileWriter("/home/yue/Desktop/FFT/"+time+".txt"));
+        BufferedWriter fw = new BufferedWriter(new FileWriter("/home/yue/Desktop/FFT/" + new Date().toString() + ".txt"));
         for (int b = 0; b < result.length; b++) {
             try {
                 fw.write(String.valueOf(result[b].abs()));
@@ -124,21 +176,18 @@ public class FFTTaskTest {
     }
 
     static int getThriMaxItemIndex(Complex[] target) {
-        int max_index = 0, max2_index = 0, max3_index = 0;
+        int max3_index = 0;
         Complex max = new Complex(0, 0);
         Complex max2 = new Complex(0, 0);
         Complex max3 = new Complex(0, 0);
-        int fre = 0;
         for (int k = 0; k < target.length / 2; k++) {
             if (target[k].abs() > max.abs()) {
                 max = target[k];
-                max_index = k;
             }
         }
         for (int l = 0; l < target.length / 2; l++) {
             if (target[l].abs() > max2.abs() && target[l].abs() != max.abs()) {
                 max2 = target[l];
-                max2_index = l;
             }
         }
         for (int m = 0; m < target.length / 2; m++) {
