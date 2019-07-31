@@ -29,3 +29,24 @@ spring:
     url: http://127.0.0.1:8086
     user: root
     password: root
+  activemq:
+    broker-url: tcp://127.0.0.1:61616
+    user: admin
+    password: admin
+    queue: hp.queue
+    pool:
+      enabled: false #无超时时间
+      maxConnections: 2
+      idleTimeout: 30000
+    packages:
+      trust-all: true
+    in-memory: false
+  jms:
+    pub-sub-domain: false    #(为true时是topic模式，为false是queue模式)
+  mqtt:
+    url: tcp://60.205.207.115:1883
+    client:
+      id: plantserver
+    default:
+      topic: HPtopic
+    completionTimeout: 3000

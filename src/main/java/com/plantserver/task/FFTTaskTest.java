@@ -32,7 +32,7 @@ public class FFTTaskTest {
 
     private static InfluxDB influxDB = InfluxDBFactory.connect("http://60.205.207.115:8086", "root", "root");
 
-    @Scheduled(cron = "0/5 * * * * *")
+    //@Scheduled(cron = "0/5 * * * * *")
     public void caculFFT() throws IOException, ParseException {
         System.out.println("INFO:" + new Date() + "开始运行任务");
         SimpleDateFormat format = new SimpleDateFormat("yyyy-M-ddHH:mm:ss");
