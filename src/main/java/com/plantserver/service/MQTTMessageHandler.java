@@ -9,6 +9,8 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 @Component("messageHandler")
@@ -21,7 +23,7 @@ public class MQTTMessageHandler implements MessageHandler {
 
     @Override
     public void handleMessage(Message<?> message) {
-        System.out.println("【*** 接收消息    ***】" + message.getPayload());
+        //System.out.println("【*** 接收消息    ***】" + message.getPayload());
         String[] textarr = message.getPayload().toString().split(",");
         //System.out.println(datestr+"-------------------");
         try {
@@ -39,7 +41,9 @@ public class MQTTMessageHandler implements MessageHandler {
                     .build();
             batchPoints.point(tmpPoint);
             influxDB.write(batchPoints);
-            System.out.println("============数 据 添 加 成 功==================");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String now = sdf.format(new Date(Long.parseLong(String.valueOf(textarr[2]))));
+            System.out.println("============" + now + "数 据 添 加 成 功" + textarr[2] + "==================");
 
         } catch (Exception e) {
             e.printStackTrace();

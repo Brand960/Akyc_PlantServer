@@ -13,6 +13,7 @@ import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 
@@ -57,8 +58,14 @@ public class MqttConfiguration {
     // 配置消息适配器，配置订阅客户端
     @Bean
     public MessageProducer inbound() {
+        String[] topics=defaultTopic.split(",");
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory(), defaultTopic);
+                new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory());
+        for(String topic:topics){
+            if(!StringUtils.isEmpty(topic)){
+                adapter.addTopic(topic,1);
+            }
+        }
         adapter.setCompletionTimeout(completionTimeout);
         // 设置转换器，接收bytes
 //        DefaultPahoMessageConverter converter = new DefaultPahoMessageConverter();
