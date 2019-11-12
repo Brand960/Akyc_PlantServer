@@ -11,6 +11,8 @@ import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
 import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
+import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
+import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.StringUtils;
@@ -24,11 +26,17 @@ public class MqttConfiguration {
     @Value("${spring.mqtt.url}")
     private String hostUrl;
 
-    @Value("${spring.mqtt.client.id}")
-    private String clientId;
+    @Value("${spring.mqtt.client.consumer_id}")
+    private String consumerId;
+
+    @Value("${spring.mqtt.client.producer_id}")
+    private String producerId;
 
     @Value("${spring.mqtt.default.topic}")
     private String defaultTopic;
+
+    @Value("${spring.mqtt.default.msgTopic}")
+    private String msgTopic;
 
     @Value("${spring.mqtt.completionTimeout}")
     private int completionTimeout;
@@ -58,20 +66,20 @@ public class MqttConfiguration {
     // 配置消息适配器，配置订阅客户端
     @Bean
     public MessageProducer inbound() {
-        String[] topics=defaultTopic.split(",");
+        String[] topics = defaultTopic.split(",");
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory());
-        for(String topic:topics){
-            if(!StringUtils.isEmpty(topic)){
-                adapter.addTopic(topic,1);
+                new MqttPahoMessageDrivenChannelAdapter(consumerId, mqttClientFactory());
+        for (String topic : topics) {
+            if (!StringUtils.isEmpty(topic)) {
+                adapter.addTopic(topic, 1);
             }
         }
         adapter.setCompletionTimeout(completionTimeout);
         // 设置转换器，接收bytes
-//        DefaultPahoMessageConverter converter = new DefaultPahoMessageConverter();
-//        converter.setPayloadAsBytes(true);
-//        adapter.setConverter(converter);
-//        adapter.setQos(1);
+        DefaultPahoMessageConverter converter = new DefaultPahoMessageConverter();
+        converter.setPayloadAsBytes(true);
+        adapter.setConverter(converter);
+        adapter.setQos(1);
         adapter.setOutputChannel(mqttInputChannel());
         return adapter;
     }
@@ -81,6 +89,23 @@ public class MqttConfiguration {
     @Bean
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public MessageHandler handler() {
+        return messageHandler;
+    }
+
+
+    // 配置消息适配器，配置发布端
+    @Bean
+    public MessageChannel mqttOutboundChannel() {
+        return new DirectChannel();
+    }
+
+    // 接收消息处理器（发布）
+    @Bean
+    @ServiceActivator(inputChannel = "mqttOutboundChannel")
+    public MessageHandler outbound() {
+        MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler(producerId, mqttClientFactory());
+        messageHandler.setAsync(true);
+        messageHandler.setDefaultTopic(msgTopic);
         return messageHandler;
     }
 }

@@ -7,7 +7,7 @@ plantsever:
 logging:
   level:
     root: error
-    com.plantserver: debug
+    com.plantserver: error
 spring:
   redis:
     host: localhost
@@ -46,7 +46,11 @@ spring:
   mqtt:
     url: tcp://60.205.207.115:1883
     client:
-      id: plantserver123
+      consumer_id: pla_consumer
+      producer_id: pla_producer
     default:
-      topic: HPtopic1/#,HTtopic/#
+      topic: HPtopic/#,byteMsgTest/#
+      msgTopic: byteMsgTest/#
     completionTimeout: 3000
+    username: admin
+    password: public

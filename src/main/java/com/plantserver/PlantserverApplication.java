@@ -1,7 +1,7 @@
 package com.plantserver;
 
+import com.plantserver.test.MqttPublisherTest;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -14,6 +14,7 @@ public class PlantserverApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(PlantserverApplication.class, args);
+        MqttPublisherTest test = new MqttPublisherTest();
+        test.sendMqtt();
     }
-
 }
