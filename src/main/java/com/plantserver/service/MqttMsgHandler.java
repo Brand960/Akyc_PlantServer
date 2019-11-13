@@ -1,5 +1,6 @@
 package com.plantserver.service;
 
+import com.plantserver.Util.AkycByteMsg;
 import com.plantserver.Util.ParserUtils;
 import org.apache.log4j.Logger;
 import org.influxdb.InfluxDB;
@@ -32,18 +33,23 @@ public class MqttMsgHandler implements MessageHandler {
     @Override
     public void handleMessage(Message<?> message) {
         //System.out.println("【*** 接收消息    ***】" + message.getPayload());
-        byte[] byteArr = (byte[])message.getPayload();
+        byte[] byteArr = (byte[]) message.getPayload();
         System.out.println(Arrays.toString(byteArr));
 
-        long res=(long)msgHandler.parserUtils.shiftBytes(byteArr,0,"long");
-        int res1=(int)msgHandler.parserUtils.shiftBytes(byteArr,8,"int");
-        short res2= (short)msgHandler.parserUtils.shiftBytes(byteArr, 12, "short") ;
-        long res3= (long)msgHandler.parserUtils.jvmBytes(byteArr, 0, "long") ;
-        int res4= (int)msgHandler.parserUtils.jvmBytes(byteArr, 8, "int") ;
-        short res5= (short)msgHandler.parserUtils.jvmBytes(byteArr, 12, "short") ;
+        long res = (long) msgHandler.parserUtils.shiftBytes(byteArr, 0, "long");
+        int res1 = (int) msgHandler.parserUtils.shiftBytes(byteArr, 8, "int");
+        short res2 = (short) msgHandler.parserUtils.shiftBytes(byteArr, 12, "short");
+
+        long res3 = (long) msgHandler.parserUtils.jvmBytes(byteArr, 0, "long");
+        int res4 = (int) msgHandler.parserUtils.jvmBytes(byteArr, 8, "int");
+        short res5 = (short) msgHandler.parserUtils.jvmBytes(byteArr, 12, "short");
         byte[] tmp = new byte[4];
         System.arraycopy(byteArr, 28, tmp, 0, 4);
         String res6 = new String(tmp);
+
+
+        AkycByteMsg byteMsg = new AkycByteMsg(byteArr);
+        long data = byteMsg.getTimestamp();
         System.out.println(res);
 //        try {
 //            BatchPoints batchPoints = BatchPoints.database("plantsurv_web").build();
