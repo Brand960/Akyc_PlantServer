@@ -1,19 +1,14 @@
 package com.plantserver.Util;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-
 public class AkycByteMsg {
     private short flag, count;
     private int uid;
-    private ParserUtils parserUtils = new ParserUtils();
+    private ParserUtil parserUtil = new ParserUtil();
 
     public AkycByteMsg(byte[] input) {
-        this.uid = (int) parserUtils.shiftBytes(input, 0, "int");
-        this.flag = (short) parserUtils.shiftBytes(input, 4, "short");
-        this.count = (short) parserUtils.shiftBytes(input, 6, "short");
+        this.uid = (int) parserUtil.shiftBytes(input, 0, "int");
+        this.flag = (short) parserUtil.shiftBytes(input, 4, "short");
+        this.count = (short) parserUtil.shiftBytes(input, 6, "short");
         System.out.println("解析到头部8字节:" + this.uid + "|=|" + this.flag + "|=|" + this.count);
     }
 
@@ -30,14 +25,14 @@ public class AkycByteMsg {
     }
 
     public long getTSInLine(byte[] byteArr, int offset) {
-        return (long) parserUtils.shiftBytes(byteArr, offset, "long");
+        return (long) parserUtil.shiftBytes(byteArr, offset, "long");
     }
 
     public short getShakeInLine(byte[] byteArr, int offset) {
-        return (short) parserUtils.shiftBytes(byteArr, offset, "short");
+        return (short) parserUtil.shiftBytes(byteArr, offset, "short");
     }
 
     public short getTempInLine(byte[] byteArr, int offset) {
-        return (short) parserUtils.shiftBytes(byteArr, offset, "short");
+        return (short) parserUtil.shiftBytes(byteArr, offset, "short");
     }
 }

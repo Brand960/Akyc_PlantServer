@@ -1,6 +1,6 @@
 package com.plantserver.service;
 
-import com.plantserver.Util.ParserUtils;
+import com.plantserver.Util.ParserUtil;
 import com.plantserver.config.MqttGateway;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ public class MqttMsgPublisher {
     @Resource
     private MqttGateway mqttGateway;
     @Resource
-    private ParserUtils parserUtils;
+    private ParserUtil parserUtil;
 
     private static MqttMsgPublisher mqttMsgPublisher;
 
@@ -22,7 +22,7 @@ public class MqttMsgPublisher {
     }
 
     public void sendMqtt() {
-        byte[] sendData = mqttMsgPublisher.parserUtils.toStringHex("F8 FF FF FF FF FF FF FF F9 FF FF FF FA FF FB FF FC FF FD FF FE FF FF FF 20 00 20 00 20 00 0D 0A");
+        byte[] sendData = mqttMsgPublisher.parserUtil.toStringHex("F8 FF FF FF FF FF FF FF F9 FF FF FF FA FF FB FF FC FF FD FF FE FF FF FF 20 00 20 00 20 00 0D 0A");
         mqttMsgPublisher.mqttGateway.sendToMqtt(sendData, "byteMsgTest");
     }
 

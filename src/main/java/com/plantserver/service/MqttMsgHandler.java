@@ -1,7 +1,8 @@
 package com.plantserver.service;
 
 import com.plantserver.Util.AkycByteMsg;
-import com.plantserver.Util.ParserUtils;
+import com.plantserver.Util.ParserUtil;
+import com.plantserver.Util.RedisUtil;
 import org.apache.log4j.Logger;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -32,10 +32,10 @@ public class MqttMsgHandler implements MessageHandler {
     private InfluxDB influxDB;
 
     @Resource
-    private RedisManager redisManager;
+    private RedisUtil redisUtil;
 
     @Resource
-    private ParserUtils parserUtils;
+    private ParserUtil parserUtil;
     private static MqttMsgHandler msgHandler;
 
     @PostConstruct //通过@PostConstruct实现初始化bean之前进行的操作
@@ -77,7 +77,7 @@ public class MqttMsgHandler implements MessageHandler {
         int i = (byteArr.length - 8) / 24, offset = 8, temp;
         short ax, ay, az, wx, wy, wz;
         long ts;
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, Object> map = new HashMap<>();
         BatchPoints batchPoints = BatchPoints.database(database1).build();
         for (int j = 0; j < i; j++) {
             // 时间戳8B振动数据2B*6温度4B，共24B一条
@@ -109,9 +109,9 @@ public class MqttMsgHandler implements MessageHandler {
         influxDB.write(batchPoints);
 
         // 实时数据需要覆盖存入redis，供画图
-        redisManager.sethm("sensor_" + msg.getUid(), map);
+        redisUtil.hmset("sensor_" + msg.getUid(), map);
         // 更新工作状态为1(测试数据传输模式)
-        redisManager.setstr("sensor_" + msg.getUid() + "_flag", "1");
+        redisUtil.set("sensor_" + msg.getUid() + "_flag", "1");
     }
 
     /**
@@ -151,6 +151,6 @@ public class MqttMsgHandler implements MessageHandler {
         influxDB.write(batchPoints);
 
         // 更新工作状态为2(测试数据传输模式)
-        redisManager.setstr("sensor_" + msg.getUid() + "_flag", "2");
+        redisUtil.set("sensor_" + msg.getUid() + "_flag", "2");
     }
 }

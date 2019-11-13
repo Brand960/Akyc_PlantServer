@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 @Component
-public class ParserUtils {
+public class ParserUtil {
 
     /**
      * 解码字节成整型
