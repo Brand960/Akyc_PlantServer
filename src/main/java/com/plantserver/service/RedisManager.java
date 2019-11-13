@@ -5,6 +5,8 @@ package com.plantserver.service;
  * @version V1.0
  */
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -200,6 +202,7 @@ public class RedisManager {
         return value;
     }
 
+
     public void delstr(String key) {
         Jedis jedis = jedisPool.getResource();
         try {
@@ -260,7 +263,47 @@ public class RedisManager {
         return keys;
     }
 
-   // public Jedis jedis() {
+    /**
+     * set
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    public HashMap<String,String> sethm(String key, HashMap<String,String> value) {
+        Jedis jedis = jedisPool.getResource();
+        try {
+            jedis.hmset(key, value);
+            if (this.expire != 0) {
+                jedis.expire(key, this.expire);
+            }
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
+        }
+        return value;
+    }
+
+    /**
+     * get value from redis
+     *
+     * @param key
+     * @return
+     */
+    public List<String> gethm(String key) {
+        List<String> value = null;
+        Jedis jedis = jedisPool.getResource();
+        try {
+            value = jedis.hmget(key);
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
+        }
+        return value;
+    }
+    // public Jedis jedis() {
 //        return jedisPool.getResource();
 //    }
 }

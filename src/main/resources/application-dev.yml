@@ -23,6 +23,8 @@ spring:
     url: http://60.205.207.115:8086
     user: root
     password: root
+    database1: plantsurv_realTime
+    database2: plantsurv_perHour
   mqtt:
     url: tcp://60.205.207.115:1883
     client:
