@@ -3,24 +3,18 @@ package com.plantserver.service;
 import com.plantserver.Util.ParserUtil;
 import org.apache.log4j.Logger;
 import org.influxdb.InfluxDB;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.Point;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 @Component("messageHandler")
-public class MQTTMessageHandler implements MessageHandler {
+public class MqttMsgHandler implements MessageHandler {
 
-    private static final Logger log = Logger.getLogger(MQTTMessageHandler.class);
+    private static final Logger log = Logger.getLogger(MqttMsgHandler.class);
 
     @Resource
     private InfluxDB influxDB;
@@ -28,7 +22,7 @@ public class MQTTMessageHandler implements MessageHandler {
     @Resource
     private ParserUtil parserUtil;
 
-    private static MQTTMessageHandler msgHandler;
+    private static MqttMsgHandler msgHandler;
 
     @PostConstruct //通过@PostConstruct实现初始化bean之前进行的操作
     public void init() {
