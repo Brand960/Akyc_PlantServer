@@ -1,6 +1,6 @@
 package com.plantserver.service;
 
-import com.plantserver.Util.ParserUtil;
+import com.plantserver.Util.ParserUtils;
 import org.apache.log4j.Logger;
 import org.influxdb.InfluxDB;
 import org.springframework.messaging.Message;
@@ -20,7 +20,7 @@ public class MqttMsgHandler implements MessageHandler {
     private InfluxDB influxDB;
 
     @Resource
-    private ParserUtil parserUtil;
+    private ParserUtils parserUtils;
 
     private static MqttMsgHandler msgHandler;
 
@@ -35,12 +35,12 @@ public class MqttMsgHandler implements MessageHandler {
         byte[] byteArr = (byte[])message.getPayload();
         System.out.println(Arrays.toString(byteArr));
 
-        long res=(long)msgHandler.parserUtil.shiftBytes(byteArr,0,"long");
-        int res1=(int)msgHandler.parserUtil.shiftBytes(byteArr,8,"int");
-        short res2= (short)msgHandler.parserUtil.shiftBytes(byteArr, 12, "short") ;
-        long res3= (long)msgHandler.parserUtil.jvmBytes(byteArr, 0, "long") ;
-        int res4= (int)msgHandler.parserUtil.jvmBytes(byteArr, 8, "int") ;
-        short res5= (short)msgHandler.parserUtil.jvmBytes(byteArr, 12, "short") ;
+        long res=(long)msgHandler.parserUtils.shiftBytes(byteArr,0,"long");
+        int res1=(int)msgHandler.parserUtils.shiftBytes(byteArr,8,"int");
+        short res2= (short)msgHandler.parserUtils.shiftBytes(byteArr, 12, "short") ;
+        long res3= (long)msgHandler.parserUtils.jvmBytes(byteArr, 0, "long") ;
+        int res4= (int)msgHandler.parserUtils.jvmBytes(byteArr, 8, "int") ;
+        short res5= (short)msgHandler.parserUtils.jvmBytes(byteArr, 12, "short") ;
         byte[] tmp = new byte[4];
         System.arraycopy(byteArr, 28, tmp, 0, 4);
         String res6 = new String(tmp);
