@@ -25,6 +25,4 @@ public class MqttMsgPublisher {
         byte[] sendData = mqttMsgPublisher.parserUtil.toStringHex("F8 FF FF FF FF FF FF FF F9 FF FF FF FA FF FB FF FC FF FD FF FE FF FF FF 20 00 20 00 20 00 0D 0A");
         mqttMsgPublisher.mqttGateway.sendToMqtt(sendData, "byteMsgTest");
     }
-
-
 }

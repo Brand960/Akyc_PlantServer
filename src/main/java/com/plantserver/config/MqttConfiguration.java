@@ -32,10 +32,10 @@ public class MqttConfiguration {
     @Value("${spring.mqtt.client.producer_id}")
     private String producerId;
 
-    @Value("${spring.mqtt.default.topic}")
+    @Value("${spring.mqtt.default.subtopic}")
     private String defaultTopic;
 
-    @Value("${spring.mqtt.default.msgTopic}")
+    @Value("${spring.mqtt.default.pubTopic}")
     private String msgTopic;
 
     @Value("${spring.mqtt.completionTimeout}")
