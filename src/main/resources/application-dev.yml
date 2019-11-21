@@ -1,7 +1,7 @@
 logging:
   level:
     root: error
-    com.plantserver: error
+    com.plantserver: debug
 spring:
   redis:
     host: localhost
@@ -25,14 +25,17 @@ spring:
     password: root
     database1: plantsurv_realTime
     database2: plantsurv_perHour
+    measurement:
+      shake: shake
+
   mqtt:
     url: tcp://60.205.207.115:1883
     client:
       consumer_id: pla_consumer
       producer_id: pla_producer
     default:
-      topic: HPtopic/#,byteMsgTest/#
-      msgTopic: byteMsgTest/#
+      subtopic: HPtopic/#,byteMsgTest/#
+      pubTopic: byteMsgTest/#
     completionTimeout: 3000
     username: admin
     password: public
