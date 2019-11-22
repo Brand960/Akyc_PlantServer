@@ -2,6 +2,7 @@ package com.plantserver.service;
 
 
 import com.plantserver.Util.AkycByteMsg;
+import com.plantserver.Util.InfluxUtil;
 import com.plantserver.Util.RedisUtil;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
@@ -30,27 +31,21 @@ public class MqttMsgHandler implements MessageHandler {
     @Value("${spring.influx.database2}")
     private String database2;
 
-    @Value("${spring.influx.measurement.shake}")
-    private String shakeMeasurment;
-
-    @Value("${spring.influx.measurement.temperature}")
-    private String tempMeasurment;
-
     @Resource
     private InfluxDB influxDB;
 
     @Resource
     private RedisUtil redisUtil;
 
-//    @Resource
-//    private ParserUtil parserUtil;
+    @Resource
+    private InfluxUtil influxUtil;
 
-    private static MqttMsgHandler msgHandler;
-
-    @PostConstruct //通过@PostConstruct实现初始化bean之前进行的操作
-    public void init() {
-        msgHandler = this;
-    }
+//    private static MqttMsgHandler msgHandler;
+//
+//    @PostConstruct //通过@PostConstruct实现初始化bean之前进行的操作
+//    public void init() {
+//        msgHandler = this;
+//    }
 
     @Override
     public void handleMessage(Message<?> message) {
@@ -65,86 +60,77 @@ public class MqttMsgHandler implements MessageHandler {
             return;
         }
         if (msg.getFlag() == 1) {
-            processMode1(byteArr, msg);
+            workMode1(msg);
         } else {
-            processMode2(byteArr, msg);
+            workMode2(msg);
         }
     }
 
     /**
      * 用于处理实时数据传输
      *
-     * @param byteArr 要解析的原数组，不做拷贝切割
-     * @param msg     自定义工具类
+     * @param msg 自定义工具类
      */
-    private void processMode1(byte[] byteArr, AkycByteMsg msg) {
+    private void workMode1(AkycByteMsg msg) {
         BatchPoints batchPoints = BatchPoints.database(database1).build();
         HashMap<String, Object> map = new HashMap<>();
         HashMap<Long, Object[]> data = msg.getData();
         for (Map.Entry<Long, Object[]> entry : data.entrySet()) {
+            String uid = String.valueOf(msg.getUid());
             long ts = entry.getKey();
             Object[] entryData = entry.getValue();
-            Point tmpPointShake = Point.measurement(shakeMeasurment)
-                    .tag("sn", String.valueOf(msg.getUid()))
-                    .time(ts, TimeUnit.MILLISECONDS)
-                    .addField("Ax", (short) entryData[0])
-                    .addField("Ay", (short) entryData[1])
-                    .addField("Az", (short) entryData[2])
-                    .addField("Wx", (short) entryData[3])
-                    .addField("Wy", (short) entryData[4])
-                    .addField("Wz", (short) entryData[5])
-                    .build();
-            Point tmpPointTemp = Point.measurement(tempMeasurment)
-                    .tag("sn", String.valueOf(msg.getUid()))
-                    .time(ts, TimeUnit.MILLISECONDS)
-                    .addField("Temp", (int) entryData[6])
-                    .build();
+
+            Point tmpPointShake = influxUtil.shakePoint(uid, ts, entryData);
+            Point tmpPointTemp = influxUtil.tempPoint(uid, ts, entryData);
+
             batchPoints.point(tmpPointShake);
             batchPoints.point(tmpPointTemp);
+
             map.put(String.valueOf(ts), entryData[0] + ","
                     + entryData[1] + "," + entryData[2] + ","
                     + entryData[3] + "," + entryData[4] + ","
                     + entryData[5] + "," + entryData[6]);
         }
-        influxDB.write(batchPoints);
+        try {
+            influxDB.write(batchPoints);
+        } catch (Exception e) {
+            log.error("=====存入数据库失败！=====\n错误信息" + e.getMessage());
+        }
 
-        // 实时数据需要覆盖存入redis，供画图，sensor_uid:<timestamp,"ax,ay,ax,wx,wy,wz,temp">
-        redisUtil.hmset("sensor_" + msg.getUid(), map);
-        // 更新工作状态为1(测试数据传输模式)
-        redisUtil.set("sensor_" + msg.getUid() + "_flag", "1");
+        try {
+            // 实时数据需要覆盖存入redis，供画图，sensor_uid:<timestamp,"ax,ay,ax,wx,wy,wz,temp">
+            redisUtil.hmset("sensor_" + msg.getUid(), map);
+            // 更新工作状态为1(测试数据传输模式)
+            redisUtil.set("sensor_" + msg.getUid() + "_flag", "1");
+        } catch (Exception e) {
+            log.error("=====存入redis失败！=====\n错误信息" + e.getMessage());
+        }
     }
 
     /**
      * 用于处理每小时高频测试数据
      *
-     * @param byteArr 要解析的原数组，不做拷贝切割
-     * @param msg     自定义工具类
+     * @param msg 自定义工具类
      */
-    private void processMode2(byte[] byteArr, AkycByteMsg msg) {
+    private void workMode2(AkycByteMsg msg) {
         BatchPoints batchPoints = BatchPoints.database(database2).build();
         HashMap<Long, Object[]> data = msg.getData();
         for (Map.Entry<Long, Object[]> entry : data.entrySet()) {
             long ts = entry.getKey();
             Object[] entryData = entry.getValue();
-            Point tmpPointSake = Point.measurement(shakeMeasurment)
-                    .tag("sn", String.valueOf(msg.getUid()))
-                    .time(ts, TimeUnit.MILLISECONDS)
-                    .addField("Ax", (short) entryData[0])
-                    .addField("Ay", (short) entryData[1])
-                    .addField("Az", (short) entryData[2])
-                    .addField("Wx", (short) entryData[3])
-                    .addField("Wy", (short) entryData[4])
-                    .addField("Wz", (short) entryData[5])
-                    .build();
-            Point tmpPointTemp = Point.measurement(tempMeasurment)
-                    .tag("sn", String.valueOf(msg.getUid()))
-                    .time(ts, TimeUnit.MILLISECONDS)
-                    .addField("Temp", (int) entryData[6])
-                    .build();
-            batchPoints.point(tmpPointSake);
+            String uid = String.valueOf(msg.getUid());
+
+            Point tmpPointShake = influxUtil.shakePoint(uid, ts, entryData);
+            Point tmpPointTemp = influxUtil.tempPoint(uid, ts, entryData);
+
+            batchPoints.point(tmpPointShake);
             batchPoints.point(tmpPointTemp);
         }
-        influxDB.write(batchPoints);
+        try {
+            influxDB.write(batchPoints);
+        } catch (Exception e) {
+            log.error("=====存入数据库失败！=====\n错误信息" + e.getMessage());
+        }
 
         // 更新工作状态为2(测试数据传输模式)
         redisUtil.set("sensor_" + msg.getUid() + "_flag", "2");
