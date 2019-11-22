@@ -12,6 +12,7 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -32,6 +33,9 @@ public class MqttMsgHandler implements MessageHandler {
     @Value("${spring.influx.measurement.shake}")
     private String shakeMeasurment;
 
+    @Value("${spring.influx.measurement.temperature}")
+    private String tempMeasurment;
+
     @Resource
     private InfluxDB influxDB;
 
@@ -50,17 +54,6 @@ public class MqttMsgHandler implements MessageHandler {
 
     @Override
     public void handleMessage(Message<?> message) {
-        //System.out.println("【*** 接收消息    ***】" + message.getPayload());
-        //        long res = (long) msgHandler.parserUtils.shiftBytes(byteArr, 0, "long");
-        //        int res1 = (int) msgHandler.parserUtils.shiftBytes(byteArr, 8, "int");
-        //        short res2 = (short) msgHandler.parserUtils.shiftBytes(byteArr, 12, "short");
-        //
-        //        long res3 = (long) msgHandler.parserUtils.jvmBytes(byteArr, 0, "long");
-        //        int res4 = (int) msgHandler.parserUtils.jvmBytes(byteArr, 8, "int");
-        //        short res5 = (short) msgHandler.parserUtils.jvmBytes(byteArr, 12, "short");
-        //        byte[] tmp = new byte[4];
-        //        System.arraycopy(byteArr, 28, tmp, 0, 4);
-        //        String res6 = new String(tmp);
         byte[] byteArr = (byte[]) message.getPayload();
 
         // 这里对数据进行处理
@@ -85,49 +78,37 @@ public class MqttMsgHandler implements MessageHandler {
      * @param msg     自定义工具类
      */
     private void processMode1(byte[] byteArr, AkycByteMsg msg) {
-//        int i = (byteArr.length - 8) / 24, offset = 8, temp;
-//        short ax, ay, az, wx, wy, wz;
-//        long ts;
-        //for (int j = 0; j < i; j++) {
-        // 时间戳8B振动数据2B*6温度4B，共24B一条
-//            ts = msg.getTSInLine(byteArr, offset);
-//            ax = msg.getShakeInLine(byteArr, offset + 8);
-//            ay = msg.getShakeInLine(byteArr, offset + 10);
-//            az = msg.getShakeInLine(byteArr, offset + 12);
-//            wx = msg.getShakeInLine(byteArr, offset + 14);
-//            wy = msg.getShakeInLine(byteArr, offset + 16);
-//            wz = msg.getShakeInLine(byteArr, offset + 18);
-//            temp = msg.getTempInLine(byteArr, offset + 20);
-        // 实时数据拼接
         BatchPoints batchPoints = BatchPoints.database(database1).build();
         HashMap<String, Object> map = new HashMap<>();
-        HashMap<Long, short[]> data = msg.getData();
-        for (Map.Entry<Long, short[]> entry : data.entrySet()) {
+        HashMap<Long, Object[]> data = msg.getData();
+        for (Map.Entry<Long, Object[]> entry : data.entrySet()) {
             long ts = entry.getKey();
-            short[] entryData = entry.getValue();
-            map.put(String.valueOf(entry.getKey()), entryData[0] + ","
+            Object[] entryData = entry.getValue();
+            Point tmpPointShake = Point.measurement(shakeMeasurment)
+                    .tag("sn", String.valueOf(msg.getUid()))
+                    .time(ts, TimeUnit.MILLISECONDS)
+                    .addField("Ax", (short) entryData[0])
+                    .addField("Ay", (short) entryData[1])
+                    .addField("Az", (short) entryData[2])
+                    .addField("Wx", (short) entryData[3])
+                    .addField("Wy", (short) entryData[4])
+                    .addField("Wz", (short) entryData[5])
+                    .build();
+            Point tmpPointTemp = Point.measurement(tempMeasurment)
+                    .tag("sn", String.valueOf(msg.getUid()))
+                    .time(ts, TimeUnit.MILLISECONDS)
+                    .addField("Temp", (int) entryData[6])
+                    .build();
+            batchPoints.point(tmpPointShake);
+            batchPoints.point(tmpPointTemp);
+            map.put(String.valueOf(ts), entryData[0] + ","
                     + entryData[1] + "," + entryData[2] + ","
                     + entryData[3] + "," + entryData[4] + ","
                     + entryData[5] + "," + entryData[6]);
-            Point tmpPoint = Point.measurement(shakeMeasurment)
-                    .addField("count", msg.getCount())
-                    .tag("sn", String.valueOf(msg.getUid()))
-                    .time(ts, TimeUnit.MILLISECONDS)
-                    .addField("Ax", entryData[0])
-                    .addField("Ay", entryData[1])
-                    .addField("Az", entryData[2])
-                    .addField("Wx", entryData[3])
-                    .addField("Wy", entryData[4])
-                    .addField("Wz", entryData[5])
-                    .addField("Temp", entryData[6])
-                    .build();
-            batchPoints.point(tmpPoint);
-            // 偏移量指向增加
-            //offset += 24;
         }
         influxDB.write(batchPoints);
 
-        // 实时数据需要覆盖存入redis，供画图
+        // 实时数据需要覆盖存入redis，供画图，sensor_uid:<timestamp,"ax,ay,ax,wx,wy,wz,temp">
         redisUtil.hmset("sensor_" + msg.getUid(), map);
         // 更新工作状态为1(测试数据传输模式)
         redisUtil.set("sensor_" + msg.getUid() + "_flag", "1");
@@ -140,37 +121,28 @@ public class MqttMsgHandler implements MessageHandler {
      * @param msg     自定义工具类
      */
     private void processMode2(byte[] byteArr, AkycByteMsg msg) {
-//        int i = (byteArr.length - 8) / 24, offset = 8, temp;
-//        short ax, ay, az, wx, wy, wz;
-//        long ts;
-//        for (int j = 0; j < i; j++) {
-//            ts = msg.getTSInLine(byteArr, offset);
-//            ax = msg.getShakeInLine(byteArr, offset + 8);
-//            ay = msg.getShakeInLine(byteArr, offset + 10);
-//            az = msg.getShakeInLine(byteArr, offset + 12);
-//            wx = msg.getShakeInLine(byteArr, offset + 14);
-//            wy = msg.getShakeInLine(byteArr, offset + 16);
-//            wz = msg.getShakeInLine(byteArr, offset + 18);
-//            temp = msg.getTempInLine(byteArr, offset + 20);
         BatchPoints batchPoints = BatchPoints.database(database2).build();
-        HashMap<Long, short[]> data = msg.getData();
-        for (Map.Entry<Long, short[]> entry : data.entrySet()) {
+        HashMap<Long, Object[]> data = msg.getData();
+        for (Map.Entry<Long, Object[]> entry : data.entrySet()) {
             long ts = entry.getKey();
-            short[] entryData = entry.getValue();
-            Point tmpPoint = Point.measurement(shakeMeasurment)
-                    .addField("count", msg.getCount())
+            Object[] entryData = entry.getValue();
+            Point tmpPointSake = Point.measurement(shakeMeasurment)
                     .tag("sn", String.valueOf(msg.getUid()))
                     .time(ts, TimeUnit.MILLISECONDS)
-                    .addField("Ax", entryData[0])
-                    .addField("Ay", entryData[1])
-                    .addField("Az", entryData[2])
-                    .addField("Wx", entryData[3])
-                    .addField("Wy", entryData[4])
-                    .addField("Wz", entryData[5])
-                    .addField("Temp", entryData[6])
+                    .addField("Ax", (short) entryData[0])
+                    .addField("Ay", (short) entryData[1])
+                    .addField("Az", (short) entryData[2])
+                    .addField("Wx", (short) entryData[3])
+                    .addField("Wy", (short) entryData[4])
+                    .addField("Wz", (short) entryData[5])
                     .build();
-            batchPoints.point(tmpPoint);
-//            offset += 24;
+            Point tmpPointTemp = Point.measurement(tempMeasurment)
+                    .tag("sn", String.valueOf(msg.getUid()))
+                    .time(ts, TimeUnit.MILLISECONDS)
+                    .addField("Temp", (int) entryData[6])
+                    .build();
+            batchPoints.point(tmpPointSake);
+            batchPoints.point(tmpPointTemp);
         }
         influxDB.write(batchPoints);
 

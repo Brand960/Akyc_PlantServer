@@ -68,6 +68,9 @@ public class ParserUtil {
             case "short":
                 length = 2;
                 break;
+            case "char":
+                length = 1;
+                break;
             default:
                 return 0;
         }
@@ -91,6 +94,8 @@ public class ParserUtil {
             case "short":
                 return (short) ((tmp[0] & 0xFF) |
                         (tmp[1] & 0xFF) << 8);
+            case "char":
+                return (char) (tmp[0] & 0xFF);
             default:
                 return 0;
         }
