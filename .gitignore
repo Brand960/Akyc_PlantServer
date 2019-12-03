@@ -5,6 +5,7 @@
 .idea
 target
 src/test
+logs
 *.iml
 # Log file
 *.log

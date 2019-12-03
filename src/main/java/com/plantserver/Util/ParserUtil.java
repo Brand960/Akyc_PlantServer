@@ -48,6 +48,15 @@ public class ParserUtil {
         }
     }
 
+    public float jvmBytes2Float(byte[] input, int offset) {
+        byte[] tmp = new byte[4];
+        System.arraycopy(input, offset, tmp, 0, 4);
+        ByteBuffer buffer = ByteBuffer.wrap(tmp);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        return buffer.getFloat();
+    }
+
+
     /**
      * byte[]数组位运算取数值
      *

@@ -27,7 +27,8 @@ spring:
     database2: plantsurv_perHour
     measurement:
       shake: shake
-      temperature: temp
+      temperature: temperature
+      power: power
 
   mqtt:
     url: tcp://60.205.207.115:1883
