@@ -1,8 +1,8 @@
 package com.plantserver.service;
 
-import com.plantserver.entity.AKYCPayload;
-import com.plantserver.Util.PointUtil;
-import com.plantserver.Util.RedisUtil;
+import com.plantserver.entity.SaferconPayload;
+import com.plantserver.util.PointUtil;
+import com.plantserver.util.RedisUtil;
 import com.plantserver.entity.MPU6500;
 import com.plantserver.entity.VAPE;
 import org.influxdb.InfluxDB;
@@ -38,23 +38,16 @@ public class MqttMsgHandler implements MessageHandler {
     @Resource
     private PointUtil pointUtil;
 
-//    private static MqttMsgHandler msgHandler;
-//
-//    @PostConstruct //通过@PostConstruct实现初始化bean之前进行的操作
-//    public void init() {
-//        msgHandler = this;
-//    }
-
     @Override
     public void handleMessage(Message<?> message) {
         byte[] byteArr = (byte[]) message.getPayload();
 
         // 这里对数据进行处理
-        AKYCPayload payload;
+        SaferconPayload payload;
         try {
-            payload = new AKYCPayload(byteArr);
+            payload = new SaferconPayload(byteArr);
         } catch (Exception NullPointerException) {
-            log.error("错误数据校验数据部分未通过");
+            log.error("错误数据");
             return;
         }
         if (payload.getWorkMode().equals("realTime")) {
@@ -62,6 +55,7 @@ public class MqttMsgHandler implements MessageHandler {
         } else {
             perHourMode(payload);
         }
+        log.info("\n[Payload Handler]=======================================================");
     }
 
 
@@ -70,7 +64,7 @@ public class MqttMsgHandler implements MessageHandler {
      *
      * @param payload 自定义工具类
      */
-    private void realTimeMode(AKYCPayload payload) {
+    private void realTimeMode(SaferconPayload payload) {
         BatchPoints batchPoints = BatchPoints.database(database1).build();
         HashMap<String, Object> map = new HashMap<>();
         ArrayList<Object> data = payload.getData();
@@ -85,7 +79,8 @@ public class MqttMsgHandler implements MessageHandler {
                     batchPoints.point(tmpPoint);
                     batchPoints.point(shakePoint);
                     //todo 下划线后缀区分同sn的shake和power属性
-                    map.put(((MPU6500) element).getTimestamp() + "_shake", ((MPU6500) element).getAx() + ","
+                    map.put(uid + "_shake", ((MPU6500) element).getTimestamp()
+                            + "," + ((MPU6500) element).getAx() + ","
                             + ((MPU6500) element).getAy() + "," + ((MPU6500) element).getAz() + ","
                             + ((MPU6500) element).getPx() + "," + ((MPU6500) element).getPy() + ","
                             + ((MPU6500) element).getPz() + "," + ((MPU6500) element).getTemperature());
@@ -105,22 +100,17 @@ public class MqttMsgHandler implements MessageHandler {
                     return;
                 }
             }
-
-
         }
+
         try {
             influxDB.write(batchPoints);
-        } catch (Exception e) {
-            log.error("=====存入数据库失败！=====\n错误信息" + e.getMessage());
-        }
-
-        try {
             // 实时数据需要覆盖存入redis，供画图，sensor_uid:<timestamp,"ax,ay,ax,wx,wy,wz,temp">
             redisUtil.hmset("sensor_" + payload.getUid(), map);
             // 更新工作状态为0(实时数据传输模式)
-            redisUtil.set("sensor_" + payload.getUid() + "_flag", "1");
+            redisUtil.set("sensor_" + payload.getUid() + "_workMode", "0");
+            log.info("[InfluxDB&Redis]Influx point and redis write success");
         } catch (Exception e) {
-            log.error("=====存入redis失败！=====\n错误信息" + e.getMessage());
+            log.error("[InfluxDB&Redis]Influx point and redis write fail\nErrorMessage:" + e.getMessage());
         }
     }
 
@@ -129,7 +119,7 @@ public class MqttMsgHandler implements MessageHandler {
      *
      * @param payload 自定义工具类
      */
-    private void perHourMode(AKYCPayload payload) {
+    private void perHourMode(SaferconPayload payload) {
         BatchPoints batchPoints = BatchPoints.database(database2).build();
         ArrayList<Object> data = payload.getData();
         for (Object element : data) {
@@ -156,15 +146,14 @@ public class MqttMsgHandler implements MessageHandler {
                 }
             }
 
-
             try {
                 influxDB.write(batchPoints);
+                // 更新工作状态为1(测试数据传输模式)
+                redisUtil.set("sensor_" + payload.getUid() + "_workMode", "1");
+                log.info("[InfluxDB&Redis]Influx point and redis write success");
             } catch (Exception e) {
-                log.error("=====存入数据库失败！=====\n错误信息" + e.getMessage());
+                log.error("[InfluxDB&Redis]Influx point and redis write fail\nErrorMessage:" + e.getMessage());
             }
-
-            // 更新工作状态为1(测试数据传输模式)
-            redisUtil.set("sensor_" + payload.getUid() + "_flag", "2");
         }
     }
 }

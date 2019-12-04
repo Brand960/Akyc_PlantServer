@@ -1,6 +1,7 @@
-package com.plantserver.Util;
+package com.plantserver.util;
 
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -26,6 +27,9 @@ public class ParserUtil {
             case "int":
                 length = 4;
                 break;
+            case "float":
+                length = 4;
+                break;
             case "short":
                 length = 2;
                 break;
@@ -43,17 +47,11 @@ public class ParserUtil {
                 return buffer.getInt();
             case "short":
                 return buffer.getShort();
+            case "float":
+                return buffer.getFloat();
             default:
                 return 0;
         }
-    }
-
-    public float jvmBytes2Float(byte[] input, int offset) {
-        byte[] tmp = new byte[4];
-        System.arraycopy(input, offset, tmp, 0, 4);
-        ByteBuffer buffer = ByteBuffer.wrap(tmp);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        return buffer.getFloat();
     }
 
 
@@ -87,22 +85,22 @@ public class ParserUtil {
         System.arraycopy(input, offset, tmp, 0, length);
         switch (type) {
             case "long":
-                return ((long) (tmp[0] & 0xFF) |
-                        (long) (tmp[1] & 0xFF) << 8 |
-                        (long) (tmp[2] & 0xFF) << 16 |
-                        (long) (tmp[3] & 0xFF) << 24 |
-                        (long) (tmp[4] & 0xFF) << 32 |
-                        (long) (tmp[5] & 0xFF) << 40 |
-                        (long) (tmp[6] & 0xFF) << 48 |
-                        (long) (tmp[7] & 0xFF) << 56);
+                return ((long) (tmp[7] & 0xFF) |
+                        (long) (tmp[6] & 0xFF) << 8 |
+                        (long) (tmp[5] & 0xFF) << 16 |
+                        (long) (tmp[4] & 0xFF) << 24 |
+                        (long) (tmp[3] & 0xFF) << 32 |
+                        (long) (tmp[2] & 0xFF) << 40 |
+                        (long) (tmp[1] & 0xFF) << 48 |
+                        (long) (tmp[0] & 0xFF) << 56);
             case "int":
-                return ((tmp[0] & 0xFF) |
-                        (tmp[1] & 0xFF) << 8 |
-                        (tmp[2] & 0xFF) << 16 |
-                        (tmp[3] & 0xFF) << 24);
+                return ((tmp[3] & 0xFF) |
+                        (tmp[2] & 0xFF) << 8 |
+                        (tmp[1] & 0xFF) << 16 |
+                        (tmp[0] & 0xFF) << 24);
             case "short":
-                return (short) ((tmp[0] & 0xFF) |
-                        (tmp[1] & 0xFF) << 8);
+                return (short) ((tmp[1] & 0xFF) |
+                        (tmp[0] & 0xFF) << 8);
             case "char":
                 return (char) (tmp[0] & 0xFF);
             default:
@@ -113,23 +111,25 @@ public class ParserUtil {
     /**
      * 十六进制字符串转字节数组
      * <p>将测试数据转成byte[]再通过mqtt发送，每两个字符代表一个字节</p>
-     *
-     * @param s 输入十六进制字符串
+     * txt文本里每2个十六进制字符可表示256个数，即8b的二进制组合数(1B)，故每两个txt文本字符表示1B
+     * 解析时替换空格格式符号等，每2个十六进制字符用整形接收并作与运算(处理器高位补1)，转为byte
+     * @param hexStr 输入十六进制字符串
      * @return byte[]数据
      */
-    public byte[] toStringHex(String s) {
+    public byte[] toStringHex(String hexStr) {
         // 删除空格
-        s = s.replace(" ", "");
-        // 每两个字符代表一个字节
-        byte[] baKeyword = new byte[s.length() / 2];
-        for (int i = 0; i < baKeyword.length; i++) {
+        hexStr = hexStr.replace(" ", "");
+        hexStr = hexStr.replace("\t", "");
+        // 每两个数字代表1B
+        byte[] byteArr = new byte[hexStr.length() / 2];
+        for (int i = 0; i < byteArr.length; i++) {
             try {
-                // 解析每个8位字节为32位时和11111111做与运算后保证二进制补码不变转成byte
-                baKeyword[i] = (byte) (0xff & Integer.parseInt(s.substring(i * 2, i * 2 + 2), 16));
+                // Integer(32b)解析每两个数字时 &11111111 运算后保证二进制补码不变转成byte
+                byteArr[i] = (byte) (0xff & Integer.parseInt(hexStr.substring(i * 2, i * 2 + 2), 16));
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return baKeyword;
+        return byteArr;
     }
 }

@@ -1,4 +1,4 @@
-package com.plantserver.Util;
+package com.plantserver.util;
 
 import com.plantserver.entity.MPU6500;
 import com.plantserver.entity.VAPE;
@@ -6,7 +6,6 @@ import org.influxdb.dto.Point;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 @Component

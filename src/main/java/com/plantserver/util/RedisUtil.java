@@ -1,4 +1,4 @@
-package com.plantserver.Util;
+package com.plantserver.util;
 
 import java.util.List;
 import java.util.Map;

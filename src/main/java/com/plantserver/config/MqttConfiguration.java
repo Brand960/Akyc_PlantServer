@@ -95,13 +95,13 @@ public class MqttConfiguration {
 
     // 配置消息适配器，配置发布端
     @Bean
-    public MessageChannel mqttOutboundChannel() {
+    public MessageChannel mqttOutPutChannel() {
         return new DirectChannel();
     }
 
     // 接收消息处理器（发布）
     @Bean
-    @ServiceActivator(inputChannel = "mqttOutboundChannel")
+    @ServiceActivator(inputChannel = "mqttOutPutChannel")
     public MessageHandler outbound() {
         MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler(producerId, mqttClientFactory());
         messageHandler.setAsync(true);

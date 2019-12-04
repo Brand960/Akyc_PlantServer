@@ -36,8 +36,8 @@ spring:
       consumer_id: pla_consumer
       producer_id: pla_producer
     default:
-      subtopic: HPtopic/#,byteMsgTest/#
-      pubTopic: byteMsgTest/#
+      subtopic: BytePayload/test
+      pubTopic: BytePayload/test
     completionTimeout: 3000
     username: admin
     password: public

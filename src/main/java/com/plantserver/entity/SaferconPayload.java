@@ -1,29 +1,23 @@
 package com.plantserver.entity;
 
-import com.plantserver.Util.ParserUtil;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 
-
-public class AKYCPayload extends BytePayload {
-    private static final Logger log = LoggerFactory.getLogger(AKYCPayload.class);
-    @Resource
-    private ParserUtil parserUtil;
+public class SaferconPayload extends BytePayload {
+    private static final Logger log = LoggerFactory.getLogger(SaferconPayload.class);
 
     //Uid of the current equipment 4B [0,1,2,3]
     @Getter
     private int uid;
 
     //Flag of the current payload 2B [4,5]
-    //todo flag 12b reserved for future use
-    private byte[] flag = new byte[2];
+    // todo flag 12b reserved for future use
     // 2b 00实时 01计算数据 [4]
     private int workMode;
     // 2b 00振动温度 01功率 [4]
@@ -31,29 +25,34 @@ public class AKYCPayload extends BytePayload {
 
     //sizeof(using package struct) 2B [6,7]
     //the numbers of the following data packages, Max is 60
-    private byte[] sizeByte = new byte[1], numByte = new byte[1];
     // size 每条数据长度(B) num 共有几条数据
     private int size, num;
 
     @Getter
     private ArrayList<Object> data = new ArrayList<>();
 
-    public AKYCPayload(@NotNull byte[] input) throws NullPointerException {
-        uid = (int) parserUtil.shiftBytes(input, 0, "int");
+//    @Resource
+//    private ParserUtil parserUtil;
+//    private static SaferconPayload saferconPayload;
+//
+//    @PostConstruct
+//    public void init(){
+//        saferconPayload=this;
+//    }
 
-        System.arraycopy(input, 4, flag, 0, 2);
-        workMode = (flag[0] >> 6) & 0x03;
-        dataMode = (flag[0] >> 4) & 0x03;
+    public SaferconPayload(byte[] input) throws NullPointerException {
+        uid = (int) bytePayload.parserUtil.shiftBytes(input, 0, "int");
 
-        System.arraycopy(input, 6, sizeByte, 0, 1);
-        size = ByteBuffer.wrap(sizeByte).order(ByteOrder.LITTLE_ENDIAN).getInt();
-        System.arraycopy(input, 7, numByte, 0, 1);
-        num = ByteBuffer.wrap(numByte).order(ByteOrder.LITTLE_ENDIAN).getInt();
+        workMode = (input[4] >> 6) & 0x03;
+        dataMode = (input[4] >> 4) & 0x03;
 
-        log.info("[Payload Header]Receive byte[] from" + this.uid +
-                "which work mode is" + WORKMAP.get(workMode) +
-                ", per data size is" + size +
-                " and total num is" + num);
+        size = input[6] & 0xff;
+        num = input[7] & 0xff;
+
+        log.info("[Payload Header]Receive byte[] from " + this.uid +
+                " which work mode is " + WORKMAP.get(workMode) +
+                ", per data size is " + size +
+                " and total num is " + num);
 
         // 数据部分校验完整性
         if (num == (input.length - 8) / size)
@@ -87,11 +86,11 @@ public class AKYCPayload extends BytePayload {
         System.out.println("[Payload Data] ***read " + DATAMAP.get(dataMode) + " message completed***");
     }
 
-    public String getWorkMode(){
+    public String getWorkMode() {
         return WORKMAP.get(workMode);
     }
 
-    public String getDataMode(){
+    public String getDataMode() {
         return DATAMAP.get(dataMode);
     }
 }
