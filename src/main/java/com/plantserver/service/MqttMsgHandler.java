@@ -52,7 +52,7 @@ public class MqttMsgHandler implements MessageHandler {
         }
         if (payload.getWorkMode().equals("realTime")) {
             realTimeMode(payload);
-        } else {
+        } else if (payload.getWorkMode().equals("perHour")) {
             perHourMode(payload);
         }
         log.info("\n[Payload Handler]=======================================================");
@@ -78,19 +78,24 @@ public class MqttMsgHandler implements MessageHandler {
                     Point shakePoint = pointUtil.shakePoint(uid, (MPU6500) element);
                     batchPoints.point(tmpPoint);
                     batchPoints.point(shakePoint);
+
                     //todo 下划线后缀区分同sn的shake和power属性
                     map.put(uid + "_shake", ((MPU6500) element).getTimestamp()
                             + "," + ((MPU6500) element).getAx() + ","
                             + ((MPU6500) element).getAy() + "," + ((MPU6500) element).getAz() + ","
                             + ((MPU6500) element).getPx() + "," + ((MPU6500) element).getPy() + ","
-                            + ((MPU6500) element).getPz() + "," + ((MPU6500) element).getTemperature());
+                            + ((MPU6500) element).getPz());
+                    map.put(uid + "_temperature", ((MPU6500) element).getTimestamp()
+                            + "," + ((MPU6500) element).getTemperature());
                     break;
                 }
                 case "power": {
                     assert element instanceof VAPE;
                     Point powerPoint = pointUtil.powerPoint(uid, (VAPE) element);
                     batchPoints.point(powerPoint);
-                    map.put(((VAPE) element).getTimestamp() + "_power", ((VAPE) element).getV() + ","
+
+                    map.put(uid + "_power", ((VAPE) element).getTimestamp()
+                            + "," + ((VAPE) element).getV() + ","
                             + ((VAPE) element).getA() + "," + ((VAPE) element).getP() + ","
                             + ((VAPE) element).getE());
                     break;

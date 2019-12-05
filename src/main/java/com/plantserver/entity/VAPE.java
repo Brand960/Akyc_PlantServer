@@ -16,7 +16,7 @@ public class VAPE extends BytePayload {
         timestamp = getLongValue(input, 0);
         v = getFloatValue(input, 8);
         a = getFloatValue(input, 12);
-        p = getFloatValue(input, 14);
-        e = getFloatValue(input, 16);
+        p = getFloatValue(input, 16);
+        e = getFloatValue(input, 20);
     }
 }

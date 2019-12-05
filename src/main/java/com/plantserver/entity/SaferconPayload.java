@@ -31,15 +31,6 @@ public class SaferconPayload extends BytePayload {
     @Getter
     private ArrayList<Object> data = new ArrayList<>();
 
-//    @Resource
-//    private ParserUtil parserUtil;
-//    private static SaferconPayload saferconPayload;
-//
-//    @PostConstruct
-//    public void init(){
-//        saferconPayload=this;
-//    }
-
     public SaferconPayload(byte[] input) throws NullPointerException {
         uid = (int) bytePayload.parserUtil.shiftBytes(input, 0, "int");
 
@@ -55,9 +46,9 @@ public class SaferconPayload extends BytePayload {
                 " and total num is " + num);
 
         // 数据部分校验完整性
-        if (num == (input.length - 8) / size)
+        if (num == (input.length - 8) / size) {
             log.info("[Payload Header]Payload integrity check success");
-        else {
+        } else {
             log.error("[Payload Header]Payload integrity check fail");
             throw new NullPointerException();
         }
@@ -65,6 +56,7 @@ public class SaferconPayload extends BytePayload {
         int offset = 0;
         // count前八位表明数据域格式,调用不同的解码
         switch (dataMode) {
+            // 振动温度模式 Flag[2,3] 00
             case 0: {
                 for (int i = 0; i < num; i++) {
                     byte[] tmp = new byte[size];
@@ -74,6 +66,7 @@ public class SaferconPayload extends BytePayload {
                 }
                 break;
             }
+            // 功率模式 Flag[2,3] 01
             case 1: {
                 for (int i = 0; i < num; i++) {
                     byte[] tmp = new byte[size];
