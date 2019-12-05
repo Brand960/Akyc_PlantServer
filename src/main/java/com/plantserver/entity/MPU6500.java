@@ -21,13 +21,14 @@ public class MPU6500 extends BytePayload {
         float scale = GMAP.get((input[22] >> 6) & 0x03);
 
         timestamp = getLongValue(input, 0);
+        // todo -32768~32767更进一步的精度分正负
         ax = getShortValue(input, 8) / 32768f * scale;
         ay = getShortValue(input, 10) / 32768f * scale;
         az = getShortValue(input, 12) / 32768f * scale;
         px = getShortValue(input, 14);
         py = getShortValue(input, 16);
         pz = getShortValue(input, 18);
-        // 温度范围 徐博说是 正负40
+        // todo 温度范围 目前徐博说是正负40
         temperature = getShortValue(input, 20) / 32768f * TSCALE;
     }
 }

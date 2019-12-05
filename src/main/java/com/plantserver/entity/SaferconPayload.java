@@ -63,6 +63,7 @@ public class SaferconPayload extends BytePayload {
                     System.arraycopy(input, 8 + offset * size, tmp, 0, size);
                     MPU6500 listItem = new MPU6500(tmp);
                     data.add(listItem);
+                    offset++;
                 }
                 break;
             }
@@ -73,6 +74,7 @@ public class SaferconPayload extends BytePayload {
                     System.arraycopy(input, 8 + offset * size, tmp, 0, size);
                     VAPE listItem = new VAPE(tmp);
                     data.add(listItem);
+                    offset++;
                 }
             }
         }

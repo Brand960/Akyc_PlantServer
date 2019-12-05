@@ -16,8 +16,8 @@ class BytePayload {
     static BytePayload bytePayload;
 
     @PostConstruct
-    public void init(){
-        bytePayload=this;
+    public void init() {
+        bytePayload = this;
     }
 
     static final Map<Integer, Float> GMAP;
@@ -26,7 +26,7 @@ class BytePayload {
 
     static {
         GMAP = new HashMap<>();
-        GMAP.put(0, 9.8f ); // 正负1g
+        GMAP.put(0, 9.8f); // 正负1g
         GMAP.put(1, 9.8f * 2); // 正负2g
         GMAP.put(2, 9.8f * 3); // 正负3g
         GMAP.put(3, 9.8f * 4); // 正负4g
