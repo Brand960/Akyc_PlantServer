@@ -55,7 +55,6 @@ public class MqttMsgHandler implements MessageHandler {
         } else if (payload.getWorkMode().equals("perHour")) {
             perHourMode(payload);
         }
-        log.info("\n[Payload Handler]=======================================================");
     }
 
 
@@ -67,7 +66,7 @@ public class MqttMsgHandler implements MessageHandler {
     private void realTimeMode(SaferconPayload payload) {
         BatchPoints batchPoints = BatchPoints.database(database1).build();
         HashMap<String, Object> map = new HashMap<>();
-        ArrayList<Object> data = payload.getData();
+        ArrayList<Object> data = payload.getObjectList();
         for (Object element : data) {
             // 每个数据包不变的部分uid timestamp data数组
             String uid = String.valueOf(payload.getUid());
@@ -113,7 +112,7 @@ public class MqttMsgHandler implements MessageHandler {
             redisUtil.hmset("sensor_" + payload.getUid(), map);
             // 更新工作状态为0(实时数据传输模式)
             redisUtil.set("sensor_" + payload.getUid() + "_workMode", "0");
-            log.info("[InfluxDB&Redis]Influx point and redis write success");
+            log.info("[InfluxDB&Redis]Influx point and redis write success\n");
         } catch (Exception e) {
             log.error("[InfluxDB&Redis]Influx point and redis write fail\nErrorMessage:" + e.getMessage());
         }
@@ -126,7 +125,7 @@ public class MqttMsgHandler implements MessageHandler {
      */
     private void perHourMode(SaferconPayload payload) {
         BatchPoints batchPoints = BatchPoints.database(database2).build();
-        ArrayList<Object> data = payload.getData();
+        ArrayList<Object> data = payload.getObjectList();
         for (Object element : data) {
             // 每个数据包不变的部分uid timestamp data数组
             String uid = String.valueOf(payload.getUid());

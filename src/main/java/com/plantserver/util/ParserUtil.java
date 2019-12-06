@@ -39,7 +39,7 @@ public class ParserUtil {
         byte[] tmp = new byte[length];
         System.arraycopy(input, offset, tmp, 0, length);
         ByteBuffer buffer = ByteBuffer.wrap(tmp);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.order(ByteOrder.BIG_ENDIAN);
         switch (type) {
             case "long":
                 return buffer.getLong();

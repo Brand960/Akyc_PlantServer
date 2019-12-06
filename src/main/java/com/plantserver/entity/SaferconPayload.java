@@ -3,10 +3,7 @@ package com.plantserver.entity;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 
 public class SaferconPayload extends BytePayload {
@@ -29,7 +26,7 @@ public class SaferconPayload extends BytePayload {
     private int size, num;
 
     @Getter
-    private ArrayList<Object> data = new ArrayList<>();
+    private ArrayList<Object> objectList = new ArrayList<>();
 
     public SaferconPayload(byte[] input) throws NullPointerException {
         uid = (int) bytePayload.parserUtil.shiftBytes(input, 0, "int");
@@ -47,38 +44,70 @@ public class SaferconPayload extends BytePayload {
 
         // 数据部分校验完整性
         if (num == (input.length - 8) / size) {
-            log.info("[Payload Header]Payload integrity check success");
+            log.info("[Payload Header]Payload data integrity check success:" + size + "/" + num);
         } else {
-            log.error("[Payload Header]Payload integrity check fail");
+            log.error("[Payload Header]Payload data integrity check fail" + size + "/" + num);
             throw new NullPointerException();
         }
 
         int offset = 0;
         // count前八位表明数据域格式,调用不同的解码
-        switch (dataMode) {
-            // 振动温度模式 Flag[2,3] 00
-            case 0: {
-                for (int i = 0; i < num; i++) {
-                    byte[] tmp = new byte[size];
-                    System.arraycopy(input, 8 + offset * size, tmp, 0, size);
-                    MPU6500 listItem = new MPU6500(tmp);
-                    data.add(listItem);
-                    offset++;
+        try {
+            switch (dataMode) {
+                // 振动温度模式 Flag[2,3] 00
+                case 0: {
+                    for (int i = 0; i < num; i++) {
+                        byte[] tmp = new byte[size];
+                        System.arraycopy(input, 8 + offset * size, tmp, 0, size);
+                        MPU6500 mpu6500 = new MPU6500(tmp);
+                        objectList.add(mpu6500);
+                        offset++;
+                    }
+                    break;
                 }
-                break;
-            }
-            // 功率模式 Flag[2,3] 01
-            case 1: {
-                for (int i = 0; i < num; i++) {
-                    byte[] tmp = new byte[size];
-                    System.arraycopy(input, 8 + offset * size, tmp, 0, size);
-                    VAPE listItem = new VAPE(tmp);
-                    data.add(listItem);
-                    offset++;
+                // 功率模式 Flag[2,3] 01
+                case 1: {
+                    for (int i = 0; i < num; i++) {
+                        byte[] tmp = new byte[size];
+                        System.arraycopy(input, 8 + offset * size, tmp, 0, size);
+                        VAPE vape = new VAPE(tmp);
+                        objectList.add(vape);
+                        offset++;
+                    }
                 }
             }
+            log.debug("============objectList============");
+            for (Object element : objectList) {
+                switch (DATAMAP.get(dataMode)) {
+                    case "shake": {
+                        assert element instanceof MPU6500;
+                        log.debug("\nTs:" + ((MPU6500) element).getTimestamp() +
+                                "\nAx:" + ((MPU6500) element).getAx() +
+                                "\nAy:" + ((MPU6500) element).getAy() +
+                                "\nAz:" + ((MPU6500) element).getAz() +
+                                "\nPx:" + ((MPU6500) element).getPx() +
+                                "\nPy:" + ((MPU6500) element).getPy() +
+                                "\nPz:" + ((MPU6500) element).getPz() +
+                                "\nTemp:" + ((MPU6500) element).getTemperature());
+                        break;
+                    }
+                    case "power": {
+                        assert element instanceof VAPE;
+                        log.debug("\nTs:" + ((VAPE) element).getTimestamp() +
+                                "\nV:" + ((VAPE) element).getV() +
+                                "\nA:" + ((VAPE) element).getA() +
+                                "\nP:" + ((VAPE) element).getP() +
+                                "\nE:" + ((VAPE) element).getE());
+                        break;
+                    }
+                }
+                log.debug("============objectList============");
+            }
+        } catch (Exception e) {
+            log.error("[Payload Data]Parse byte[] from " + this.uid +
+                    " which work mode is " + WORKMAP.get(workMode) +
+                    " fail\nError Message: " + e.getMessage());
         }
-        System.out.println("[Payload Data] ***read " + DATAMAP.get(dataMode) + " message completed***");
     }
 
     public String getWorkMode() {

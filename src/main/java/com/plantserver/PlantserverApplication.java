@@ -1,12 +1,12 @@
 package com.plantserver;
 
-import com.plantserver.service.MqttMsgHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-//@EnableScheduling
+@EnableScheduling
 @SpringBootApplication
 public class PlantserverApplication {
 
