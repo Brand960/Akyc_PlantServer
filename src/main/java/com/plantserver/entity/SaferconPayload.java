@@ -39,22 +39,23 @@ public class SaferconPayload extends BytePayload {
 
         log.info("[Payload Header]Receive byte[] from " + this.uid +
                 " which work mode is " + WORKMAP.get(workMode) +
-                ", per data size is " + size +
+                ", per object size is " + size +
                 " and total num is " + num);
 
         // 数据部分校验完整性
         if (num == (input.length - 8) / size) {
-            log.info("[Payload Header]Payload data integrity check success:" + size + "/" + num);
+            log.info("[Payload Header]Payload data integrity check success. size:" + size + "/num:" + num);
         } else {
-            log.error("[Payload Header]Payload data integrity check fail" + size + "/" + num);
+            log.error("[Payload Header]Payload data integrity check fail. size:" + size + "/num:" + num);
             throw new NullPointerException();
         }
 
         int offset = 0;
-        // count前八位表明数据域格式,调用不同的解码
+
         try {
+            // flag[2,3]表数据类型,调用不同的解码
             switch (dataMode) {
-                // 振动温度模式 Flag[2,3] 00
+                // 振动温度 Flag[2,3] 00
                 case 0: {
                     for (int i = 0; i < num; i++) {
                         byte[] tmp = new byte[size];
@@ -65,7 +66,7 @@ public class SaferconPayload extends BytePayload {
                     }
                     break;
                 }
-                // 功率模式 Flag[2,3] 01
+                // 功率 Flag[2,3] 01
                 case 1: {
                     for (int i = 0; i < num; i++) {
                         byte[] tmp = new byte[size];
@@ -98,10 +99,10 @@ public class SaferconPayload extends BytePayload {
                                 "\nA:" + ((VAPE) element).getA() +
                                 "\nP:" + ((VAPE) element).getP() +
                                 "\nE:" + ((VAPE) element).getE());
+                        log.debug("-------------object-------------");
                         break;
                     }
                 }
-                log.debug("============objectList============");
             }
         } catch (Exception e) {
             log.error("[Payload Data]Parse byte[] from " + this.uid +

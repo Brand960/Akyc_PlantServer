@@ -7,7 +7,7 @@
 #    uri-encoding: utf-8
 spring:
   profiles:
-    active: dev
+    active: aliyun
 #  activemq:
 #    broker-url: tcp://60.205.207.115:61616
 #    user: admin

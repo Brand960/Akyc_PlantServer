@@ -3,7 +3,7 @@ plantserver:
 logging:
   level:
     root: error
-    com.plantserver: debug
+    com.plantserver: info
 spring:
   redis:
     host: localhost
@@ -22,7 +22,7 @@ spring:
         # 连接池最大阻塞等待时间（使用负值表示没有限制）
         max-wait: -1
   influx:
-    url: http://60.205.207.115:8086
+    url: http://localhost:8086
     user: root
     password: root
     database1: plantsurv_realTime_test
@@ -32,13 +32,13 @@ spring:
       temperature: temperature
       power: power
   mqtt:
-    url: tcp://60.205.207.115:1883
+    url: tcp://localhost:1883
     client:
-      consumer_id: pla_consumer
-      producer_id: pla_producer
+      consumer_id: safercon_consumer
+      producer_id: safercon_producer
     default:
-      subtopic: BytePayload/test
-      pubTopic: BytePayload/test
+      subtopic: BytePayload/safercontest
+      pubTopic: BytePayload/safercontest
     completionTimeout: 3000
     username: admin
     password: public

@@ -111,10 +111,10 @@ public class MqttMsgHandler implements MessageHandler {
             // 实时数据需要覆盖存入redis，供画图，sensor_uid:<timestamp,"ax,ay,ax,wx,wy,wz,temp">
             redisUtil.hmset("sensor_" + payload.getUid(), map);
             // 更新工作状态为0(实时数据传输模式)
-            redisUtil.set("sensor_" + payload.getUid() + "_workMode", "0");
-            log.info("[InfluxDB&Redis]Influx point and redis write success\n");
+            redisUtil.set("sensor_" + payload.getUid() + "_workMode", 0);
+            log.info("[InfluxDB&Redis]Uid:"+payload.getUid()+" influx point and redis write success\n");
         } catch (Exception e) {
-            log.error("[InfluxDB&Redis]Influx point and redis write fail\nErrorMessage:" + e.getMessage());
+            log.error("[InfluxDB&Redis]Uid:"+payload.getUid()+" Influx point and redis write fail\nErrorMessage:" + e.getMessage());
         }
     }
 
@@ -149,15 +149,14 @@ public class MqttMsgHandler implements MessageHandler {
                     return;
                 }
             }
-
-            try {
-                influxDB.write(batchPoints);
-                // 更新工作状态为1(测试数据传输模式)
-                redisUtil.set("sensor_" + payload.getUid() + "_workMode", "1");
-                log.info("[InfluxDB&Redis]Influx point and redis write success");
-            } catch (Exception e) {
-                log.error("[InfluxDB&Redis]Influx point and redis write fail\nErrorMessage:" + e.getMessage());
-            }
+        }
+        try {
+            influxDB.write(batchPoints);
+            // 更新工作状态为1(测试数据传输模式)
+            redisUtil.set("sensor_" + payload.getUid() + "_workMode", 1);
+            log.info("[InfluxDB&Redis]Influx point and redis write success");
+        } catch (Exception e) {
+            log.error("[InfluxDB&Redis]Influx point and redis write fail\nErrorMessage:" + e.getMessage());
         }
     }
 }
