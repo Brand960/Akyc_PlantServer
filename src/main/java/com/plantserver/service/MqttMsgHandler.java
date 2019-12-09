@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 @Component("messageHandler")
@@ -46,8 +47,14 @@ public class MqttMsgHandler implements MessageHandler {
         SaferconPayload payload;
         try {
             payload = new SaferconPayload(byteArr);
-        } catch (Exception NullPointerException) {
-            log.error("错误数据");
+            log.info("[New Payload]Receive byte[] from " + payload.getUid() +
+                    " which work mode is " + payload.getWorkMode() +
+                    " &size:" + payload.getSize() + "/num:" + payload.getNum());
+        } catch (NullPointerException e) {
+            log.error("[New Payload]数据解析错误");
+            return;
+        } catch (Exception e) {
+            log.error("[New Payload]未知数据解析错误\nError msg:" + e.getMessage());
             return;
         }
         if (payload.getWorkMode().equals("realTime")) {
@@ -67,6 +74,7 @@ public class MqttMsgHandler implements MessageHandler {
         BatchPoints batchPoints = BatchPoints.database(database1).build();
         HashMap<String, Object> map = new HashMap<>();
         ArrayList<Object> data = payload.getObjectList();
+        log.debug("============objectList============");
         for (Object element : data) {
             // 每个数据包不变的部分uid timestamp data数组
             String uid = String.valueOf(payload.getUid());
@@ -78,13 +86,20 @@ public class MqttMsgHandler implements MessageHandler {
                     batchPoints.point(tmpPoint);
                     batchPoints.point(shakePoint);
 
-                    //todo 下划线后缀区分同sn的shake和power属性
+                    // 下划线后缀区分同sn的shake和power属性
                     map.put(uid + "_shake", ((MPU6500) element).getTimestamp()
                             + "," + ((MPU6500) element).getAx() + ","
                             + ((MPU6500) element).getAy() + "," + ((MPU6500) element).getAz() + ","
                             + ((MPU6500) element).getPx() + "," + ((MPU6500) element).getPy() + ","
                             + ((MPU6500) element).getPz());
                     map.put(uid + "_temperature", ((MPU6500) element).getTimestamp()
+                            + "," + ((MPU6500) element).getTemperature());
+                    log.debug("[" + uid + "_shake]" + ((MPU6500) element).getTimestamp()
+                            + "," + ((MPU6500) element).getAx() + ","
+                            + ((MPU6500) element).getAy() + "," + ((MPU6500) element).getAz() + ","
+                            + ((MPU6500) element).getPx() + "," + ((MPU6500) element).getPy() + ","
+                            + ((MPU6500) element).getPz());
+                    log.debug("[" + uid + "_temperature]" + ((MPU6500) element).getTimestamp()
                             + "," + ((MPU6500) element).getTemperature());
                     break;
                 }
@@ -94,6 +109,10 @@ public class MqttMsgHandler implements MessageHandler {
                     batchPoints.point(powerPoint);
 
                     map.put(uid + "_power", ((VAPE) element).getTimestamp()
+                            + "," + ((VAPE) element).getV() + ","
+                            + ((VAPE) element).getA() + "," + ((VAPE) element).getP() + ","
+                            + ((VAPE) element).getE());
+                    log.debug("[" + uid + "_power]" + ((VAPE) element).getTimestamp()
                             + "," + ((VAPE) element).getV() + ","
                             + ((VAPE) element).getA() + "," + ((VAPE) element).getP() + ","
                             + ((VAPE) element).getE());
@@ -112,9 +131,9 @@ public class MqttMsgHandler implements MessageHandler {
             redisUtil.hmset("sensor_" + payload.getUid(), map);
             // 更新工作状态为0(实时数据传输模式)
             redisUtil.set("sensor_" + payload.getUid() + "_workMode", 0);
-            log.info("[InfluxDB&Redis]Uid:"+payload.getUid()+" influx point and redis write success\n");
+            log.info("[InfluxDB&Redis]Uid:" + payload.getUid() + " influx point and redis write success\n");
         } catch (Exception e) {
-            log.error("[InfluxDB&Redis]Uid:"+payload.getUid()+" Influx point and redis write fail\nErrorMessage:" + e.getMessage());
+            log.error("[InfluxDB&Redis]Uid:" + payload.getUid() + " Influx point and redis write fail\nErrorMessage:" + e.getMessage());
         }
     }
 
@@ -126,6 +145,7 @@ public class MqttMsgHandler implements MessageHandler {
     private void perHourMode(SaferconPayload payload) {
         BatchPoints batchPoints = BatchPoints.database(database2).build();
         ArrayList<Object> data = payload.getObjectList();
+
         for (Object element : data) {
             // 每个数据包不变的部分uid timestamp data数组
             String uid = String.valueOf(payload.getUid());
@@ -150,11 +170,15 @@ public class MqttMsgHandler implements MessageHandler {
                 }
             }
         }
+        log.debug("**************************");
+        log.debug("[" + payload.getUid() + "_" + payload.getDataMode() + " perHour]" + new Date().getTime() + "complete parse, " +
+                "object num: " + data.size());
+
         try {
             influxDB.write(batchPoints);
             // 更新工作状态为1(测试数据传输模式)
             redisUtil.set("sensor_" + payload.getUid() + "_workMode", 1);
-            log.info("[InfluxDB&Redis]Influx point and redis write success");
+            log.info("[InfluxDB&Redis]Influx point and redis write success\n");
         } catch (Exception e) {
             log.error("[InfluxDB&Redis]Influx point and redis write fail\nErrorMessage:" + e.getMessage());
         }

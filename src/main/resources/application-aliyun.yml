@@ -1,9 +1,7 @@
-plantserver:
-  mode: test
 logging:
   level:
     root: error
-    com.plantserver: info
+    com.plantserver: debug
 spring:
   redis:
     host: localhost

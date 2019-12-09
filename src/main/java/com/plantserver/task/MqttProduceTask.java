@@ -20,24 +20,17 @@ public class MqttProduceTask {
     private MqttGateway mqttGateway;
     @Value("${spring.mqtt.default.pubTopic}")
     private String pubTopic;
-    @Value("${plantserver.mode}")
-    private String mode;
+    @Value("${spring.profiles.active}")
+    private String profile;
 
 
     private static final Logger log = LoggerFactory.getLogger(MqttProduceTask.class);
-
-    //        byte[] sendData = parserUtil
-//                .toStringHex(//"\t80 00 00 00    \t\t\t00 \t\t\t\t  00\t\t    18  \t\t\t01"
-//                        //+ "00 00 01 6e cf 02 b7 20 \t\t       80 00 7F FF 80 00 7F FF 80 00 7F FF\t\t  80 00\t\t\t C0 00");
-//                        "\t80 00 00 00    \t\t\t10 \t\t\t\t  00\t\t    18  \t\t\t01"
-//                                + "00 00 01 6e cf 02 b7 20 \t\t       3B C2 21 C2 3B C2 21 C2 3B C2 21 C2 3B C2 21 C2");
-//
-
+    
     @Scheduled(cron = "0/5 * * * * ?")
     public void saferconShakeSender1() {
         Random random = new Random();
-        System.out.println("0/5 * * * * ?");
-        if (!mode.equals("test")) {
+        System.out.println("0/5 * * * * ?实时振动");
+        if (!profile.equals("aliyun")) {
             return;
         }
         int x;
@@ -72,15 +65,15 @@ public class MqttProduceTask {
         try {
             mqttGateway.sendToMqtt(bytePayload.array(), pubTopic);
         } catch (Exception e) {
-            log.error("[Mqtt Sender]send test message from localhost fail");
+            log.error("[Mqtt Sender]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
         }
     }
 
     @Scheduled(cron = "1/5 * * * * ?")
     public void saferconPowerSender1() {
         Random random = new Random();
-        System.out.println("1/5 * * * * ?");
-        if (!mode.equals("test")) {
+        System.out.println("1/5 * * * * ?实时温度");
+        if (!profile.equals("aliyun")) {
             return;
         }
         int x;
@@ -111,15 +104,15 @@ public class MqttProduceTask {
         try {
             mqttGateway.sendToMqtt(bytePayload.array(), pubTopic);
         } catch (Exception e) {
-            log.error("[Mqtt Sender]send test message from localhost fail");
+            log.error("[Mqtt Sender]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
         }
     }
 
     @Scheduled(cron = "0 0/1 * * * ?")
     public void saferconShakeSender2() {
         Random random = new Random();
-        System.out.println("0 0/1 * * * ?");
-        if (!mode.equals("test")) {
+        System.out.println("0 0/1 * * * ?测试振动");
+        if (!profile.equals("aliyun")) {
             return;
         }
         int x;
@@ -154,15 +147,15 @@ public class MqttProduceTask {
         try {
             mqttGateway.sendToMqtt(bytePayload.array(), pubTopic);
         } catch (Exception e) {
-            log.error("[Mqtt Sender]send test message from localhost fail");
+            log.error("[Mqtt Sender]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
         }
     }
 
     @Scheduled(cron = "0 0/1 * * * ?")
     public void saferconPowerSender2() {
         Random random = new Random();
-        System.out.println("1 0/1 * * * ?");
-        if (!mode.equals("test")) {
+        System.out.println("1 0/1 * * * ?测试温度");
+        if (!profile.equals("aliyun")) {
             return;
         }
         int x;
@@ -193,7 +186,7 @@ public class MqttProduceTask {
         try {
             mqttGateway.sendToMqtt(bytePayload.array(), pubTopic);
         } catch (Exception e) {
-            log.error("[Mqtt Sender]send test message from localhost fail");
+            log.error("[Mqtt Sender]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
         }
     }
 

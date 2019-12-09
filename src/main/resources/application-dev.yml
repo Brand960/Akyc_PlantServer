@@ -1,5 +1,3 @@
-plantserver:
-  mode: test
 logging:
   level:
     root: error

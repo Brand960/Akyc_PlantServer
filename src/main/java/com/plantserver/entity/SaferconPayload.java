@@ -23,6 +23,7 @@ public class SaferconPayload extends BytePayload {
     //sizeof(using package struct) 2B [6,7]
     //the numbers of the following data packages, Max is 60
     // size 每条数据长度(B) num 共有几条数据
+    @Getter
     private int size, num;
 
     @Getter
@@ -37,16 +38,11 @@ public class SaferconPayload extends BytePayload {
         size = input[6] & 0xff;
         num = input[7] & 0xff;
 
-        log.info("[Payload Header]Receive byte[] from " + this.uid +
-                " which work mode is " + WORKMAP.get(workMode) +
-                ", per object size is " + size +
-                " and total num is " + num);
-
         // 数据部分校验完整性
         if (num == (input.length - 8) / size) {
-            log.info("[Payload Header]Payload data integrity check success. size:" + size + "/num:" + num);
+            log.info("[Payload HeaderDecoder]Payload data integrity check success. size:" + size + "/num:" + num);
         } else {
-            log.error("[Payload Header]Payload data integrity check fail. size:" + size + "/num:" + num);
+            log.error("[Payload HeaderDecoder]Payload data integrity check fail. size:" + size + "/num:" + num);
             throw new NullPointerException();
         }
 
@@ -77,35 +73,8 @@ public class SaferconPayload extends BytePayload {
                     }
                 }
             }
-            log.debug("============objectList============");
-            for (Object element : objectList) {
-                switch (DATAMAP.get(dataMode)) {
-                    case "shake": {
-                        assert element instanceof MPU6500;
-                        log.debug("\nTs:" + ((MPU6500) element).getTimestamp() +
-                                "\nAx:" + ((MPU6500) element).getAx() +
-                                "\nAy:" + ((MPU6500) element).getAy() +
-                                "\nAz:" + ((MPU6500) element).getAz() +
-                                "\nPx:" + ((MPU6500) element).getPx() +
-                                "\nPy:" + ((MPU6500) element).getPy() +
-                                "\nPz:" + ((MPU6500) element).getPz() +
-                                "\nTemp:" + ((MPU6500) element).getTemperature());
-                        break;
-                    }
-                    case "power": {
-                        assert element instanceof VAPE;
-                        log.debug("\nTs:" + ((VAPE) element).getTimestamp() +
-                                "\nV:" + ((VAPE) element).getV() +
-                                "\nA:" + ((VAPE) element).getA() +
-                                "\nP:" + ((VAPE) element).getP() +
-                                "\nE:" + ((VAPE) element).getE());
-                        log.debug("-------------object-------------");
-                        break;
-                    }
-                }
-            }
         } catch (Exception e) {
-            log.error("[Payload Data]Parse byte[] from " + this.uid +
+            log.error("[Payload DataDecoder]Parse byte[] from " + this.uid +
                     " which work mode is " + WORKMAP.get(workMode) +
                     " fail\nError Message: " + e.getMessage());
         }
