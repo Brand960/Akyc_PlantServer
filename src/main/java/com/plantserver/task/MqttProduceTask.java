@@ -65,7 +65,7 @@ public class MqttProduceTask {
         try {
             mqttGateway.sendToMqtt(bytePayload.array(), pubTopic);
         } catch (Exception e) {
-            log.error("[Mqtt Sender]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
+            log.error("[实时振动]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
         }
     }
 
@@ -104,7 +104,7 @@ public class MqttProduceTask {
         try {
             mqttGateway.sendToMqtt(bytePayload.array(), pubTopic);
         } catch (Exception e) {
-            log.error("[Mqtt Sender]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
+            log.error("[实时温度]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
         }
     }
 
@@ -147,7 +147,7 @@ public class MqttProduceTask {
         try {
             mqttGateway.sendToMqtt(bytePayload.array(), pubTopic);
         } catch (Exception e) {
-            log.error("[Mqtt Sender]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
+            log.error("[测试振动]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
         }
     }
 
@@ -186,7 +186,7 @@ public class MqttProduceTask {
         try {
             mqttGateway.sendToMqtt(bytePayload.array(), pubTopic);
         } catch (Exception e) {
-            log.error("[Mqtt Sender]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
+            log.error("[测试温度]Send aliyun message from localhost fail\nError msg: "+e.getMessage());
         }
     }
 
