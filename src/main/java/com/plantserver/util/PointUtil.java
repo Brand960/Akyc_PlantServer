@@ -1,6 +1,7 @@
 package com.plantserver.util;
 
 import com.plantserver.entity.MPU6500;
+import com.plantserver.entity.TTTT;
 import com.plantserver.entity.VAPE;
 import org.influxdb.dto.Point;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +50,17 @@ public class PointUtil {
                 .addField("a", entryData.getA())
                 .addField("p", entryData.getP())
                 .addField("e", entryData.getE())
+                .build();
+    }
+    // 1219添加温度4类型数据
+    public Point tempPoint(String uid, TTTT entryData) {
+        return Point.measurement(tempMeasurement)
+                .tag("sn", uid)
+                .time(entryData.getTimestamp(), TimeUnit.MILLISECONDS)
+                .addField("temperature", entryData.getT1())
+                .addField("temperature2", entryData.getT2())
+                .addField("temperature3", entryData.getT3())
+                .addField("temperature4", entryData.getT4())
                 .build();
     }
 }

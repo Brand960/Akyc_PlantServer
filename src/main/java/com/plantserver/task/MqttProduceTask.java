@@ -29,7 +29,7 @@ public class MqttProduceTask {
     @Scheduled(cron = "0/5 * * * * ?")
     public void saferconShakeSender1() {
         Random random = new Random();
-        System.out.println("0/5 * * * * ?实时振动");
+        System.out.print("\033[0;34m0/5 * * * * ?实时振动"+"\033[0m");
         if (!profile.equals("aliyun")) {
             return;
         }
@@ -72,7 +72,7 @@ public class MqttProduceTask {
     @Scheduled(cron = "1/5 * * * * ?")
     public void saferconPowerSender1() {
         Random random = new Random();
-        System.out.println("1/5 * * * * ?实时温度");
+        System.out.println("\033[0;35m1/5 * * * * ?实时温度"+"\033[0m");
         if (!profile.equals("aliyun")) {
             return;
         }
@@ -111,7 +111,7 @@ public class MqttProduceTask {
     @Scheduled(cron = "0 0/1 * * * ?")
     public void saferconShakeSender2() {
         Random random = new Random();
-        System.out.println("0 0/1 * * * ?测试振动");
+        System.out.format("\33[32;4m0 0/1 * * * ?测试振动"+"\033[0m");
         if (!profile.equals("aliyun")) {
             return;
         }
@@ -154,7 +154,7 @@ public class MqttProduceTask {
     @Scheduled(cron = "0 0/1 * * * ?")
     public void saferconPowerSender2() {
         Random random = new Random();
-        System.out.println("1 0/1 * * * ?测试温度");
+        System.out.println("\33[32;4m0 0/1 * * * ?测试温度"+"\033[0m");
         if (!profile.equals("aliyun")) {
             return;
         }

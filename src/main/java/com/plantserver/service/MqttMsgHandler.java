@@ -1,6 +1,7 @@
 package com.plantserver.service;
 
 import com.plantserver.entity.SaferconPayload;
+import com.plantserver.entity.TTTT;
 import com.plantserver.util.PointUtil;
 import com.plantserver.util.RedisUtil;
 import com.plantserver.entity.MPU6500;
@@ -89,15 +90,19 @@ public class MqttMsgHandler implements MessageHandler {
                     // 下划线后缀区分同sn的shake和power属性
                     map.put(uid + "_shake", ((MPU6500) element).getTimestamp()
                             + "," + ((MPU6500) element).getAx() + ","
-                            + ((MPU6500) element).getAy() + "," + ((MPU6500) element).getAz() + ","
-                            + ((MPU6500) element).getPx() + "," + ((MPU6500) element).getPy() + ","
+                            + ((MPU6500) element).getAy() + ","
+                            + ((MPU6500) element).getAz() + ","
+                            + ((MPU6500) element).getPx() + ","
+                            + ((MPU6500) element).getPy() + ","
                             + ((MPU6500) element).getPz());
                     map.put(uid + "_temperature", ((MPU6500) element).getTimestamp()
                             + "," + ((MPU6500) element).getTemperature());
                     log.debug("[" + uid + "_shake]" + ((MPU6500) element).getTimestamp()
                             + "," + ((MPU6500) element).getAx() + ","
-                            + ((MPU6500) element).getAy() + "," + ((MPU6500) element).getAz() + ","
-                            + ((MPU6500) element).getPx() + "," + ((MPU6500) element).getPy() + ","
+                            + ((MPU6500) element).getAy() + ","
+                            + ((MPU6500) element).getAz() + ","
+                            + ((MPU6500) element).getPx() + ","
+                            + ((MPU6500) element).getPy() + ","
                             + ((MPU6500) element).getPz());
                     log.debug("[" + uid + "_temperature]" + ((MPU6500) element).getTimestamp()
                             + "," + ((MPU6500) element).getTemperature());
@@ -110,12 +115,32 @@ public class MqttMsgHandler implements MessageHandler {
 
                     map.put(uid + "_power", ((VAPE) element).getTimestamp()
                             + "," + ((VAPE) element).getV() + ","
-                            + ((VAPE) element).getA() + "," + ((VAPE) element).getP() + ","
+                            + ((VAPE) element).getA() + ","
+                            + ((VAPE) element).getP() + ","
                             + ((VAPE) element).getE());
                     log.debug("[" + uid + "_power]" + ((VAPE) element).getTimestamp()
                             + "," + ((VAPE) element).getV() + ","
-                            + ((VAPE) element).getA() + "," + ((VAPE) element).getP() + ","
+                            + ((VAPE) element).getA() + ","
+                            + ((VAPE) element).getP() + ","
                             + ((VAPE) element).getE());
+                    break;
+                }
+                // 1219添加温度4处理
+                case "temperature": {
+                    assert element instanceof TTTT;
+                    Point powerPoint = pointUtil.tempPoint(uid, (TTTT) element);
+                    batchPoints.point(powerPoint);
+
+                    map.put(uid + "_temperature4", ((TTTT) element).getTimestamp()
+                            + "," + ((TTTT) element).getT1() + ","
+                            + ((TTTT) element).getT2() + ","
+                            + ((TTTT) element).getT3() + ","
+                            + ((TTTT) element).getT4());
+                    log.debug("[" + uid + "_temperature4]" + ((TTTT) element).getTimestamp()
+                            + "," + ((TTTT) element).getT1() + ","
+                            + ((TTTT) element).getT2() + ","
+                            + ((TTTT) element).getT3() + ","
+                            + ((TTTT) element).getT4());
                     break;
                 }
                 default: {
@@ -164,6 +189,13 @@ public class MqttMsgHandler implements MessageHandler {
                     batchPoints.point(powerPoint);
                     break;
                 }
+                // 1219添加温度4处理
+                case "temperature": {
+                    assert element instanceof TTTT;
+                    Point tmp4Point = pointUtil.tempPoint(uid, (TTTT) element);
+                    batchPoints.point(tmp4Point);
+                    break;
+                }
                 default: {
                     log.error("[Payload Handler]Influx point create from data fail");
                     return;
@@ -171,7 +203,7 @@ public class MqttMsgHandler implements MessageHandler {
             }
         }
         log.debug("**************************");
-        log.debug("[" + payload.getUid() + "_" + payload.getDataMode() + " perHour]" + new Date().getTime() + "complete parse, " +
+        log.info("[" + payload.getUid() + "_" + payload.getDataMode() + " perHour]" + new Date().getTime() + "complete parse, " +
                 "object num: " + data.size());
 
         try {

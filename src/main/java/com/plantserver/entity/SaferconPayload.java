@@ -72,6 +72,16 @@ public class SaferconPayload extends BytePayload {
                         offset++;
                     }
                 }
+                // 1219温度温度温度温度
+                case 2: {
+                    for (int i = 0; i < num; i++) {
+                        byte[] tmp = new byte[size];
+                        System.arraycopy(input, 8 + offset * size, tmp, 0, size);
+                        TTTT tttt = new TTTT(tmp);
+                        objectList.add(tttt);
+                        offset++;
+                    }
+                }
             }
         } catch (Exception e) {
             log.error("[Payload DataDecoder]Parse byte[] from " + this.uid +

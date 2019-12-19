@@ -18,7 +18,7 @@
         </rollingPolicy>
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
-                %d{yyyy-MM-dd HH:mm:ss} -%msg%n
+                %black(%d{yyyy-MM-dd HH:mm:ss}) %green([%thread]) -%boldMagenta(%msg)%n
             </Pattern>
         </layout>
     </appender>
