@@ -32,8 +32,10 @@ class BytePayload {
         GMAP.put(3, 9.8f * 4); // 正负4g
 
         WORKMAP = new HashMap<>();
-        WORKMAP.put(0, "realTime");
-        WORKMAP.put(1, "perHour");
+        WORKMAP.put(0, "perHour");
+        WORKMAP.put(1, "realTime");
+        WORKMAP.put(2, "standBy");
+        WORKMAP.put(3, "calculating");
 
         DATAMAP = new HashMap<>();
         DATAMAP.put(0, "shake");

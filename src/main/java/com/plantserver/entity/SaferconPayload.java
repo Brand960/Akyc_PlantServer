@@ -9,19 +9,19 @@ import java.util.ArrayList;
 public class SaferconPayload extends BytePayload {
     private static final Logger log = LoggerFactory.getLogger(SaferconPayload.class);
 
-    //Uid of the current equipment 4B [0,1,2,3]
+    // Uid of the current equipment 4B [0,1,2,3]
     @Getter
     private int uid;
 
-    //Flag of the current payload 2B [4,5]
+    // Flag of the current payload 2B [4,5]
     // todo flag 12b reserved for future use
-    // 2b 00实时 01计算数据 [4]
+    // 2b 00实时 01计算数据 10待机 11计算中 [4]
     private int workMode;
-    // 2b 00振动温度 01功率 [4]
+    // 2b 00振动温度 01功率 11四温度[4]
     private int dataMode;
 
-    //sizeof(using package struct) 2B [6,7]
-    //the numbers of the following data packages, Max is 60
+    // Sizeof(using package struct) 2B [6,7]
+    // The number of the following data packages, max quantity is 60
     // size 每条数据长度(B) num 共有几条数据
     @Getter
     private int size, num;

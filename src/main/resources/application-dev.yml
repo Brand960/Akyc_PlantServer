@@ -23,8 +23,8 @@ spring:
     url: http://60.205.207.115:8086
     user: root
     password: root
-    database1: plantsurv_realTime_test
-    database2: plantsurv_perHour_test
+    database1: plantsurv_realTime_dev
+    database2: plantsurv_perHour_dev
     measurement:
       shake: shake
       temperature: temperature
@@ -32,11 +32,11 @@ spring:
   mqtt:
     url: tcp://60.205.207.115:1883
     client:
-      consumer_id: pla_consumer
-      producer_id: pla_producer
+      consumer_id: pla_consumer_dev
+      producer_id: pla_producer_dev
     default:
-      subtopic: BytePayload/test
-      pubTopic: BytePayload/test
+      subtopic: BytePayload/#
+      pubTopic: BytePayload/#
     completionTimeout: 3000
     username: admin
     password: public
