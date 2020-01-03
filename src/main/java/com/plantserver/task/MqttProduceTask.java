@@ -37,7 +37,7 @@ public class MqttProduceTask {
         // 每次生成三条
         ByteBuffer bytePayload = ByteBuffer.allocate(128);
         bytePayload.putInt(-2147483648);  // uid 4B
-        bytePayload.putShort((short) 0);  // flag 2B 0实时振动 4096实时功率 16384测试振动 20480测试功率
+        bytePayload.putShort((short) 16384);  // flag 2B 16384实时振动 20480实时功率 0测试振动 4096测试功率
         bytePayload.put((byte) 24); // packagesize 24
         bytePayload.put((byte) 5); // num 3条数据
 
@@ -80,7 +80,7 @@ public class MqttProduceTask {
         // 每次生成三条
         ByteBuffer bytePayload = ByteBuffer.allocate(128);
         bytePayload.putInt(-2147483648);  // uid 4B
-        bytePayload.putShort((short) 4096);  // flag 2B 0实时振动 4096实时功率 16384测试振动 20480测试功率
+        bytePayload.putShort((short) 20480);  // flag 2B 16384实时振动 20480实时功率 0测试振动 4096测试功率
         bytePayload.put((byte) 24); // packagesize 1B 24字节/条
         bytePayload.put((byte) 5); // num 1B 3条数据
 
@@ -119,7 +119,7 @@ public class MqttProduceTask {
         // 每次生成三条
         ByteBuffer bytePayload = ByteBuffer.allocate(1448);
         bytePayload.putInt(-2147483648);  // uid 4B
-        bytePayload.putShort((short) 16384);  // flag 2B 0实时振动 4096实时功率 16384测试振动 20480测试功率
+        bytePayload.putShort((short) 0);  // flag 2B 16384实时振动 20480实时功率 0测试振动 4096测试功率
         bytePayload.put((byte) 24); // packagesize 24
         bytePayload.put((byte) 60); // num 3条数据
 
@@ -162,7 +162,7 @@ public class MqttProduceTask {
         // 每次生成三条
         ByteBuffer bytePayload = ByteBuffer.allocate(1448);
         bytePayload.putInt(-2147483648);  // uid 4B
-        bytePayload.putShort((short) 20480);  // flag 2B 0实时振动 4096实时功率 16384测试振动 20480测试功率
+        bytePayload.putShort((short) 4096);  // flag 2B 16384实时振动 20480实时功率 0测试振动 4096测试功率
         bytePayload.put((byte) 24); // packagesize 1B 24字节/条
         bytePayload.put((byte) 60); // num 1B 3条数据
 

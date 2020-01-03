@@ -33,13 +33,15 @@ public class ParserUtil {
             case "short":
                 length = 2;
                 break;
+            case "char":
+                length = 1;
             default:
                 return 0;
         }
         byte[] tmp = new byte[length];
         System.arraycopy(input, offset, tmp, 0, length);
         ByteBuffer buffer = ByteBuffer.wrap(tmp);
-        buffer.order(ByteOrder.BIG_ENDIAN);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
         switch (type) {
             case "long":
                 return buffer.getLong();
@@ -49,6 +51,8 @@ public class ParserUtil {
                 return buffer.getShort();
             case "float":
                 return buffer.getFloat();
+            case "char":
+                return buffer.getChar();
             default:
                 return 0;
         }

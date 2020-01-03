@@ -13,11 +13,10 @@ public class SaferconPayload extends BytePayload {
     @Getter
     private int uid;
 
-    // Flag of the current payload 2B [4,5]
-    // todo flag 12b reserved for future use
-    // 2b 00实时 01计算数据 10待机 11计算中 [4]
+    // Flag of the current payload 2B [4,5] Little_End低位LSB在左
+    // 2b 100实验 010实时 110待机 001计算中 101消息(休眠)[4]
     private int workMode;
-    // 2b 00振动温度 01功率 11四温度[4]
+    // 2b 100振动温度 010四温度 110功率 [4]
     private int dataMode;
 
     // Sizeof(using package struct) 2B [6,7]
@@ -30,17 +29,17 @@ public class SaferconPayload extends BytePayload {
     private ArrayList<Object> objectList = new ArrayList<>();
 
     public SaferconPayload(byte[] input) throws NullPointerException {
-        uid = (int) bytePayload.parserUtil.shiftBytes(input, 0, "int");
+        uid = (int) bytePayload.parserUtil.jvmBytes(input, 0, "int");
+        // 与0000 0111避开高位(心跳)
+        workMode = input[4] &0x07;
+        dataMode = input[5] &0x07;
 
-        workMode = (input[4] >> 6) & 0x03;
-        dataMode = (input[4] >> 4) & 0x03;
-
-        size = input[6] & 0xff;
-        num = input[7] & 0xff;
+        size = input[6];
+        num = input[7];
 
         // 数据部分校验完整性
         if (num == (input.length - 8) / size) {
-            log.info("[Payload HeaderDecoder]Payload data integrity check success. size:" + size + "/num:" + num);
+            log.debug("[Payload HeaderDecoder]Payload data integrity check success. size:" + size + "/num:" + num);
         } else {
             log.error("[Payload HeaderDecoder]Payload data integrity check fail. size:" + size + "/num:" + num);
             throw new NullPointerException();
@@ -51,7 +50,7 @@ public class SaferconPayload extends BytePayload {
         try {
             // flag[2,3]表数据类型,调用不同的解码
             switch (dataMode) {
-                // 振动温度 Flag[2,3] 00
+                // 振动温度 00
                 case 0: {
                     for (int i = 0; i < num; i++) {
                         byte[] tmp = new byte[size];
@@ -62,7 +61,7 @@ public class SaferconPayload extends BytePayload {
                     }
                     break;
                 }
-                // 功率 Flag[2,3] 01
+                // 功率 01
                 case 1: {
                     for (int i = 0; i < num; i++) {
                         byte[] tmp = new byte[size];
@@ -72,7 +71,7 @@ public class SaferconPayload extends BytePayload {
                         offset++;
                     }
                 }
-                // 1219温度温度温度温度
+                // 1219温度温度温度温度 11
                 case 2: {
                     for (int i = 0; i < num; i++) {
                         byte[] tmp = new byte[size];

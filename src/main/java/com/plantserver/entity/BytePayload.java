@@ -32,33 +32,33 @@ class BytePayload {
         GMAP.put(3, 9.8f * 4); // 正负4g
 
         WORKMAP = new HashMap<>();
-        WORKMAP.put(0, "perHour");
-        WORKMAP.put(1, "realTime");
-        WORKMAP.put(2, "standBy");
-        WORKMAP.put(3, "calculating");
+        WORKMAP.put(4, "perHour");
+        WORKMAP.put(2, "realTime");
+        WORKMAP.put(6, "standBy");
+        WORKMAP.put(1, "calculating");
+        WORKMAP.put(5, "message");
 
         DATAMAP = new HashMap<>();
-        DATAMAP.put(0, "shake");
-        DATAMAP.put(1, "power");
+        DATAMAP.put(4, "shake");
         DATAMAP.put(2, "temperature");
+        DATAMAP.put(6, "power");
     }
 
     static final float TSCALE = 40f;
 
     long getLongValue(byte[] input, int offset) {
-        return (long) bytePayload.parserUtil.shiftBytes(input, offset, "long");
+        return (long) bytePayload.parserUtil.jvmBytes(input, offset, "long");
     }
 
     short getShortValue(byte[] input, int offset) {
-        return (short) bytePayload.parserUtil.shiftBytes(input, offset, "short");
+        return (short) bytePayload.parserUtil.jvmBytes(input, offset, "short");
     }
 
     int getIntValue(byte[] input, int offset) {
-        return (int) bytePayload.parserUtil.shiftBytes(input, offset, "int");
+        return (int) bytePayload.parserUtil.jvmBytes(input, offset, "int");
     }
 
     float getFloatValue(byte[] input, int offset) {
         return (float) bytePayload.parserUtil.jvmBytes(input, offset, "float");
-        //return parserUtil.jvmBytes2Float(input, offset);
     }
 }

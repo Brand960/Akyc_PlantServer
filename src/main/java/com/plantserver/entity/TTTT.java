@@ -3,6 +3,9 @@ package com.plantserver.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 // 1219温度温度温度温度
 @Getter
 @Setter
@@ -14,10 +17,10 @@ public class TTTT extends BytePayload {
     public float t4; //the data of electric energy value the unit is (Kwh)
 
     TTTT(byte[] input) throws NullPointerException {
-        timestamp = getLongValue(input, 0);
+        timestamp = (long) Math.abs(getIntValue(input, 0)) *1000+Math.abs(getIntValue(input, 4));
         t1 = getFloatValue(input, 8);
         t2 = getFloatValue(input, 12);
-        t3= getFloatValue(input, 16);
+        t3 = getFloatValue(input, 16);
         t4 = getFloatValue(input, 20);
     }
 }

@@ -13,7 +13,7 @@ public class VAPE extends BytePayload {
     public float e; //the data of electric energy value the unit is (Kwh)
 
     VAPE(byte[] input) throws NullPointerException {
-        timestamp = getLongValue(input, 0);
+        timestamp = (long) Math.abs(getIntValue(input, 0)) *1000+Math.abs(getIntValue(input, 4));
         v = getFloatValue(input, 8);
         a = getFloatValue(input, 12);
         p = getFloatValue(input, 16);
