@@ -39,9 +39,9 @@ class BytePayload {
         WORKMAP.put(5, "message");
 
         DATAMAP = new HashMap<>();
-        DATAMAP.put(4, "shake");
+        DATAMAP.put(1, "shake");
         DATAMAP.put(2, "temperature");
-        DATAMAP.put(6, "power");
+        DATAMAP.put(3, "power");
     }
 
     static final float TSCALE = 40f;

@@ -31,6 +31,7 @@ public class PointUtil {
                 .addField("px", entryData.getPx())
                 .addField("py", entryData.getPy())
                 .addField("pz", entryData.getPz())
+                .addField("temperature", entryData.getTemperature())
                 .build();
     }
 

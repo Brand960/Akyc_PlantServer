@@ -97,9 +97,9 @@ public class MqttMsgHandler implements MessageHandler {
             switch (payload.getDataMode()) {
                 case "shake": {
                     assert element instanceof MPU6500;
-                    Point tmpPoint = pointUtil.tempPoint(uid, (MPU6500) element);
+//                    Point tmpPoint = pointUtil.tempPoint(uid, (MPU6500) element);
+//                    batchPoints.point(tmpPoint);
                     Point shakePoint = pointUtil.shakePoint(uid, (MPU6500) element);
-                    batchPoints.point(tmpPoint);
                     batchPoints.point(shakePoint);
 
                     // 下划线后缀区分同sn的shake和power属性
@@ -109,18 +109,21 @@ public class MqttMsgHandler implements MessageHandler {
                             + ((MPU6500) element).getAz() + ","
                             + ((MPU6500) element).getPx() + ","
                             + ((MPU6500) element).getPy() + ","
-                            + ((MPU6500) element).getPz());
-                    map.put("sensor_" + uid + "_temperature", ((MPU6500) element).getTimestamp()
-                            + "," + ((MPU6500) element).getTemperature());
+                            + ((MPU6500) element).getPz() + ","
+                            + ((MPU6500) element).getTemperature());
+
                     log.debug("[" + "sensor_" + uid + "_shake]" + ((MPU6500) element).getTimestamp()
                             + "," + ((MPU6500) element).getAx() + ","
                             + ((MPU6500) element).getAy() + ","
                             + ((MPU6500) element).getAz() + ","
                             + ((MPU6500) element).getPx() + ","
                             + ((MPU6500) element).getPy() + ","
-                            + ((MPU6500) element).getPz());
-                    log.debug("[" + "sensor_" + uid + "_temperature]" + ((MPU6500) element).getTimestamp()
-                            + "," + ((MPU6500) element).getTemperature());
+                            + ((MPU6500) element).getPz() + ","
+                            + ((MPU6500) element).getTemperature());
+//                    map.put("sensor_" + uid + "_temperature", ((MPU6500) element).getTimestamp()
+//                            + "," + ((MPU6500) element).getTemperature());
+//                    log.debug("[" + "sensor_" + uid + "_temperature]" + ((MPU6500) element).getTimestamp()
+//                            + "," + ((MPU6500) element).getTemperature());
                     break;
                 }
                 case "power": {
@@ -168,7 +171,7 @@ public class MqttMsgHandler implements MessageHandler {
 
         try {
             influxDB.write(batchPoints);
-            // 实时数据需要覆盖存入redis，供画图，sensor_uid:<timestamp,"ax,ay,ax,wx,wy,wz,temp">
+            // 实时数据需要覆盖存入redis，供画图，sensor_uid:<timestamp,"ax,ay,ax,wx,wy,wz,temperature">
             redisUtil.hmset("sensor_" + payload.getUid(), map);
             // 更新工作状态为1(实时数据传输模式)
             redisUtil.set("sensor_" + payload.getUid() + "_workMode", 1);
@@ -193,9 +196,9 @@ public class MqttMsgHandler implements MessageHandler {
             switch (payload.getDataMode()) {
                 case "shake": {
                     assert element instanceof MPU6500;
-                    Point tmpPoint = pointUtil.tempPoint(uid, (MPU6500) element);
+                    //Point tmpPoint = pointUtil.tempPoint(uid, (MPU6500) element);
                     Point shakePoint = pointUtil.shakePoint(uid, (MPU6500) element);
-                    batchPoints.point(tmpPoint);
+                    //batchPoints.point(tmpPoint);
                     batchPoints.point(shakePoint);
                     break;
                 }

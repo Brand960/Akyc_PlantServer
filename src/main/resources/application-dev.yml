@@ -35,8 +35,8 @@ spring:
       consumer_id: pla_consumer_dev
       producer_id: pla_producer_dev
     default:
-      subtopic: safercon/cocacola_freezer/1
-      pubTopic: safercon/cocacola_freezer/test
+      subtopic: safercon/cocacola_freezer/#
+      pubTopic: safercon/cocacola/test
     completionTimeout: 3000
     username: admin
     password: public

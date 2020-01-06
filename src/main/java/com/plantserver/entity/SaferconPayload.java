@@ -31,8 +31,8 @@ public class SaferconPayload extends BytePayload {
     public SaferconPayload(byte[] input) throws NullPointerException {
         uid = (int) bytePayload.parserUtil.jvmBytes(input, 0, "int");
         // 与0000 0111避开高位(心跳)
-        workMode = input[4] &0x07;
-        dataMode = input[5] &0x07;
+        workMode = input[5] &0x07;
+        dataMode = input[4] &0x07;
 
         size = input[6];
         num = input[7];
@@ -51,7 +51,7 @@ public class SaferconPayload extends BytePayload {
             // flag[2,3]表数据类型,调用不同的解码
             switch (dataMode) {
                 // 振动温度 00
-                case 0: {
+                case 1: {
                     for (int i = 0; i < num; i++) {
                         byte[] tmp = new byte[size];
                         System.arraycopy(input, 8 + offset * size, tmp, 0, size);
@@ -62,7 +62,7 @@ public class SaferconPayload extends BytePayload {
                     break;
                 }
                 // 功率 01
-                case 1: {
+                case 3: {
                     for (int i = 0; i < num; i++) {
                         byte[] tmp = new byte[size];
                         System.arraycopy(input, 8 + offset * size, tmp, 0, size);
