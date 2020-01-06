@@ -39,18 +39,17 @@ public class SaferconPayload extends BytePayload {
 
         // 数据部分校验完整性
         if (num == (input.length - 8) / size) {
-            log.debug("[Payload HeaderDecoder]Payload data integrity check success. size:" + size + "/num:" + num);
+            log.debug("["+this.uid+"_HeaderDecoder]Integrity check success. size:" + size + "/num:" + num);
         } else {
             log.error("[Payload HeaderDecoder]Payload data integrity check fail. size:" + size + "/num:" + num);
             throw new NullPointerException();
         }
 
         int offset = 0;
-
         try {
             // flag[2,3]表数据类型,调用不同的解码
             switch (dataMode) {
-                // 振动温度 00
+                // 振动温度 01
                 case 1: {
                     for (int i = 0; i < num; i++) {
                         byte[] tmp = new byte[size];
@@ -61,17 +60,7 @@ public class SaferconPayload extends BytePayload {
                     }
                     break;
                 }
-                // 功率 01
-                case 3: {
-                    for (int i = 0; i < num; i++) {
-                        byte[] tmp = new byte[size];
-                        System.arraycopy(input, 8 + offset * size, tmp, 0, size);
-                        VAPE vape = new VAPE(tmp);
-                        objectList.add(vape);
-                        offset++;
-                    }
-                }
-                // 1219温度温度温度温度 11
+                // 1219温度*4 10
                 case 2: {
                     for (int i = 0; i < num; i++) {
                         byte[] tmp = new byte[size];
@@ -81,11 +70,21 @@ public class SaferconPayload extends BytePayload {
                         offset++;
                     }
                 }
+                // 功率 11
+                case 3: {
+                    for (int i = 0; i < num; i++) {
+                        byte[] tmp = new byte[size];
+                        System.arraycopy(input, 8 + offset * size, tmp, 0, size);
+                        VAPE vape = new VAPE(tmp);
+                        objectList.add(vape);
+                        offset++;
+                    }
+                }
             }
         } catch (Exception e) {
-            log.error("[Payload DataDecoder]Parse byte[] from " + this.uid +
-                    " which work mode is " + WORKMAP.get(workMode) +
-                    " fail\nError Message: " + e.getMessage());
+            log.error("["+this.uid+"_DataDecoder] work mode is " + WORKMAP.get(workMode) +
+                    ", data mode is "+ DATAMAP.get(dataMode) +
+                    " data parse fail\nError Message: " + e.getMessage() + "\n");
         }
     }
 

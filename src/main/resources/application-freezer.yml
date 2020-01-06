@@ -7,10 +7,10 @@ server:
 logging:
   level:
     root: error
-    com.plantserver: debug
+    com.plantserver: info
 spring:
   redis:
-    host: 60.205.207.115
+    host: localhost
     port: 6379
     password: public
     # 连接超时时间（毫秒）
@@ -26,20 +26,20 @@ spring:
         # 连接池最大阻塞等待时间（使用负值表示没有限制）
         max-wait: -1
   influx:
-    url: http://60.205.207.115:8086
+    url: http://localhost:8086
     user: root
     password: root
-    database1: plantsurv_realTime_dev
-    database2: plantsurv_perHour_dev
+    database1: freezer_realTime
+    database2: freezer_perHour
     measurement:
       shake: shake
       temperature: temperature
       power: power
   mqtt:
-    url: tcp://60.205.207.115:1883
+    url: tcp://localhost:1883
     client:
-      consumer_id: pla_consumer_dev
-      producer_id: pla_producer_dev
+      consumer_id: pla_consumer_freezer
+      producer_id: pla_producer_freezer
     default:
       subtopic: safercon/cocacola_freezer/#
       pubTopic: safercon/cocacola/test

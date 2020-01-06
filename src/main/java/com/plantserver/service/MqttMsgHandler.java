@@ -48,8 +48,9 @@ public class MqttMsgHandler implements MessageHandler {
         SaferconPayload payload;
         try {
             payload = new SaferconPayload(byteArr);
-            log.info("\033[0;34m[" + payload.getUid() + "]Receive new byte[]" +
-                    " which work mode is " + payload.getWorkMode() +
+            log.info("\033[0;34m[" + payload.getUid() + "]Receive payload" +
+                    " work mode is " + payload.getWorkMode() +
+                    " data mode is " + payload.getDataMode() +
                     " &size:" + payload.getSize() + "/num:" + payload.getNum() + "\033[0m");
         } catch (NullPointerException e) {
             log.error("[New Payload]数据解析错误");
