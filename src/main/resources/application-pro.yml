@@ -38,11 +38,11 @@ spring:
   mqtt:
     url: tcp://localhost:1883
     client:
-      consumer_id: pla_consumer_JSTG
-      producer_id: pla_producer_JSTG
+      consumer_id: pla_consumer
+      producer_id: pla_producer
     default:
       subtopic: safercon/JSTG
-      pubTopic: safercon/cocacola/test
+      pubTopic: safercon/test
     completionTimeout: 3000
     username: admin
     password: public

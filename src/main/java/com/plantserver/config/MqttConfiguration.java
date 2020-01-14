@@ -1,6 +1,9 @@
 package com.plantserver.config;
 
+import com.plantserver.service.MqttMsgHandler;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +43,8 @@ public class MqttConfiguration {
 
     @Value("${spring.mqtt.completionTimeout}")
     private int completionTimeout;
+
+    private static final Logger log = LoggerFactory.getLogger(MqttConfiguration.class);
 
     // 消息处理器
     @Resource
@@ -89,6 +94,7 @@ public class MqttConfiguration {
     @Bean
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public MessageHandler handler() {
+        log.info("[初始化]订阅:"+defaultTopic);
         return messageHandler;
     }
 

@@ -69,6 +69,7 @@ public class SaferconPayload extends BytePayload {
                         objectList.add(tttt);
                         offset++;
                     }
+                    break;
                 }
                 // 功率 11
                 case 3: {
@@ -79,6 +80,7 @@ public class SaferconPayload extends BytePayload {
                         objectList.add(vape);
                         offset++;
                     }
+                    break;
                 }
             }
         } catch (Exception e) {

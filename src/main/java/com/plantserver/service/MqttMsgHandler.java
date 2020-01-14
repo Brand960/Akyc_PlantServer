@@ -53,7 +53,7 @@ public class MqttMsgHandler implements MessageHandler {
                     " data mode is " + payload.getDataMode() +
                     " &size:" + payload.getSize() + "/num:" + payload.getNum() + "\033[0m");
         } catch (NullPointerException e) {
-            log.error("[New Payload]数据解析错误");
+            log.error("[New Payload]数   据解析错误");
             return;
         } catch (Exception e) {
             log.error("[New Payload]未知数据解析错误\nError msg:" + e.getMessage());

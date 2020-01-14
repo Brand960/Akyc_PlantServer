@@ -29,8 +29,8 @@ spring:
     url: http://60.205.207.115:8086
     user: root
     password: root
-    database1: plantsurv_realTime_dev
-    database2: plantsurv_perHour_dev
+    database1: plantsurv_realTime
+    database2: plantsurv_perHour
     measurement:
       shake: shake
       temperature: temperature
@@ -41,8 +41,8 @@ spring:
       consumer_id: pla_consumer_dev
       producer_id: pla_producer_dev
     default:
-      subtopic: safercon/cocacola_freezer/#
-      pubTopic: safercon/cocacola/test
+      subtopic: safercon/JSTG
+      pubTopic: safercon/test
     completionTimeout: 3000
     username: admin
     password: public

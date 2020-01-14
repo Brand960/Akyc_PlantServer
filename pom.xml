@@ -10,8 +10,8 @@
     </parent>
     <groupId>com</groupId>
     <artifactId>plantserver</artifactId>
-    <version>0.5</version>
-    <name>plantserver</name>
+    <version>1.0</version>
+    <name>plantsurv_server</name>
     <description>PlantServer</description>
 
     <properties>
@@ -97,10 +97,10 @@
                     <layout>ZIP</layout>
                     <!--去除在生产环境中不变的依赖-->
                     <includes>
-<!--                        <include>-->
-<!--                            <groupId>non-exists</groupId>-->
-<!--                            <artifactId>non-exists</artifactId>-->
-<!--                        </include>-->
+                        <include>
+                            <groupId>non-exists</groupId>
+                            <artifactId>non-exists</artifactId>
+                        </include>
                     </includes>
                 </configuration>
                 <executions>
