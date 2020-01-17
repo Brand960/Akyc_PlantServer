@@ -31,6 +31,9 @@ public class MqttMsgHandler implements MessageHandler {
     @Value("${spring.influx.database2}")
     private String database2;
 
+    @Value("${spring.redis.expireTime}")
+    private int expireTime;
+
     @Resource
     private InfluxDB influxDB;
 
@@ -64,7 +67,7 @@ public class MqttMsgHandler implements MessageHandler {
         if (byteArr[4] == -1 && byteArr[5] == -1) {
             try {
                 // 更新SCOK状态为1
-                redisUtil.set("sensor_" + payload.getUid() + "_SCOK", 1, 60);
+                redisUtil.set("sensor_" + payload.getUid() + "_SCOK", 1, expireTime);
                 log.info("[Redis]Redis write SCOK success\n");
             } catch (Exception e) {
                 log.error("[Redis]Redis write SCOK fail\nErrorMessage:" + e.getMessage());
@@ -173,9 +176,9 @@ public class MqttMsgHandler implements MessageHandler {
         try {
             influxDB.write(batchPoints);
             // 实时数据需要覆盖存入redis，供画图，sensor_uid:<timestamp,"ax,ay,ax,wx,wy,wz,temperature">
-            redisUtil.hmset("sensor_" + payload.getUid(), map);
+            redisUtil.hmset("sensor_" + payload.getUid(), map,expireTime);
             // 更新工作状态为1(实时数据传输模式)
-            redisUtil.set("sensor_" + payload.getUid() + "_workMode", 1);
+            redisUtil.set("sensor_" + payload.getUid() + "_workMode", 1,expireTime);
             log.info("[InfluxDB&Redis]Uid:" + payload.getUid() + " influx point and redis write realTime success\n");
         } catch (Exception e) {
             log.error("[InfluxDB&Redis]Uid:" + payload.getUid() + " Influx point and redis write realTime fail\nErrorMessage:" + e.getMessage());
@@ -228,7 +231,7 @@ public class MqttMsgHandler implements MessageHandler {
         try {
             influxDB.write(batchPoints);
             // 更新工作状态为0(测试数据每小时传输模式)
-            redisUtil.set("sensor_" + payload.getUid() + "_workMode", 0);
+            redisUtil.set("sensor_" + payload.getUid() + "_workMode", 0,expireTime);
             log.info("[InfluxDB&Redis]Influx point and redis write perHour success\n");
         } catch (Exception e) {
             log.error("[InfluxDB&Redis]Influx point and redis write perHour fail\nErrorMessage:" + e.getMessage());
@@ -246,7 +249,7 @@ public class MqttMsgHandler implements MessageHandler {
                 "sensor stand by");
         try {
             // 更新工作状态为2(待机模式)
-            redisUtil.set("sensor_" + payload.getUid() + "_workMode", 2);
+            redisUtil.set("sensor_" + payload.getUid() + "_workMode", 2,expireTime);
             log.info("[Redis]Redis write standBy success\n");
         } catch (Exception e) {
             log.error("[Redis]Redis write standBy fail\nErrorMessage:" + e.getMessage());
@@ -264,7 +267,7 @@ public class MqttMsgHandler implements MessageHandler {
                 "sensor calculating");
         try {
             // 更新工作状态为3(计算模式)
-            redisUtil.set("sensor_" + payload.getUid() + "_workMode", 3);
+            redisUtil.set("sensor_" + payload.getUid() + "_workMode", 3,expireTime);
             log.info("[Redis]Redis write calculating success\n");
         } catch (Exception e) {
             log.error("[Redis]Redis write calculating fail\nErrorMessage:" + e.getMessage());
@@ -300,7 +303,7 @@ public class MqttMsgHandler implements MessageHandler {
                     break;
             }
             // 更新心跳包数据工作状态 expired after 120s
-            redisUtil.set("sensor_" + payload.getUid() + "_workMode", work_mode, 120);
+            redisUtil.set("sensor_" + payload.getUid() + "_workMode", work_mode, expireTime);
             log.info("[Redis]Redis updated by heartbeat data success\n");
         } catch (Exception e) {
             log.error("[Redis]Redis updated by heartbeat data fail\nErrorMessage:" + e.getMessage());
