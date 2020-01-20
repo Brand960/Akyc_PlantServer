@@ -51,15 +51,14 @@ public class MqttMsgHandler implements MessageHandler {
         SaferconPayload payload;
         try {
             payload = new SaferconPayload(byteArr);
-            log.info("\033[0;34m[" + payload.getUid() + "]Receive payload" +
-                    " work mode is " + payload.getWorkMode() +
-                    " data mode is " + payload.getDataMode() +
-                    " &size:" + payload.getSize() + "/num:" + payload.getNum() + "\033[0m");
+            log.info("[" + payload.getUid() + "] Receive payload" +
+                    " mode:" + payload.getWorkMode() +"/" + payload.getDataMode() +
+                    " & size:" + payload.getSize() + " /num:" + payload.getNum());
         } catch (NullPointerException e) {
-            log.error("[New Payload]数   据解析错误");
+            log.error("[SaferconPayload]数据解析错误");
             return;
         } catch (Exception e) {
-            log.error("[New Payload]未知数据解析错误\nError msg:" + e.getMessage());
+            log.error("[SaferconPayload]未知数据解析错误\nError msg:" + e.getMessage());
             return;
         }
 
@@ -68,9 +67,9 @@ public class MqttMsgHandler implements MessageHandler {
             try {
                 // 更新SCOK状态为1
                 redisUtil.set("sensor_" + payload.getUid() + "_SCOK", 1, expireTime);
-                log.info("[Redis]Redis write SCOK success\n");
+                log.info("[" + payload.getUid() + "]SCOK received\n");
             } catch (Exception e) {
-                log.error("[Redis]Redis write SCOK fail\nErrorMessage:" + e.getMessage());
+                log.error("[" + payload.getUid() + "]SCOK received, but redis write fail\nErrorMessage:" + e.getMessage());
             }
             // add0102 若 [5]与1100 0000即高两位是10 则信息为心跳状态包
         } else if (((byteArr[5] & 0xc0) >> 6) == 2) {
@@ -95,17 +94,16 @@ public class MqttMsgHandler implements MessageHandler {
         BatchPoints batchPoints = BatchPoints.database(database1).build();
         HashMap<String, Object> map = new HashMap<>();
         ArrayList<Object> data = payload.getObjectList();
+        long time=0;
         for (Object element : data) {
             // 每个数据包不变的部分uid timestamp data数组
             String uid = String.valueOf(payload.getUid());
             switch (payload.getDataMode()) {
                 case "shake": {
                     assert element instanceof MPU6500;
-//                    Point tmpPoint = pointUtil.tempPoint(uid, (MPU6500) element);
-//                    batchPoints.point(tmpPoint);
                     Point shakePoint = pointUtil.shakePoint(uid, (MPU6500) element);
                     batchPoints.point(shakePoint);
-
+                    time=((MPU6500) element).getTimestamp();
                     // 下划线后缀区分同sn的shake和power属性
                     map.put("sensor_" + uid + "_shake", ((MPU6500) element).getTimestamp()
                             + "," + ((MPU6500) element).getAx() + ","
@@ -116,7 +114,7 @@ public class MqttMsgHandler implements MessageHandler {
                             + ((MPU6500) element).getPz() + ","
                             + ((MPU6500) element).getTemperature());
 
-                    log.debug("[" + "sensor_" + uid + "_shake]" + ((MPU6500) element).getTimestamp()
+                    log.debug("[" + uid + "_shake]" + ((MPU6500) element).getTimestamp()
                             + "," + ((MPU6500) element).getAx() + ","
                             + ((MPU6500) element).getAy() + ","
                             + ((MPU6500) element).getAz() + ","
@@ -124,17 +122,13 @@ public class MqttMsgHandler implements MessageHandler {
                             + ((MPU6500) element).getPy() + ","
                             + ((MPU6500) element).getPz() + ","
                             + ((MPU6500) element).getTemperature());
-//                    map.put("sensor_" + uid + "_temperature", ((MPU6500) element).getTimestamp()
-//                            + "," + ((MPU6500) element).getTemperature());
-//                    log.debug("[" + "sensor_" + uid + "_temperature]" + ((MPU6500) element).getTimestamp()
-//                            + "," + ((MPU6500) element).getTemperature());
                     break;
                 }
                 case "power": {
                     assert element instanceof VAPE;
                     Point powerPoint = pointUtil.powerPoint(uid, (VAPE) element);
                     batchPoints.point(powerPoint);
-
+                    time=((VAPE) element).getTimestamp();
                     map.put("sensor_" + uid + "_power", ((VAPE) element).getTimestamp()
                             + "," + ((VAPE) element).getV() + ","
                             + ((VAPE) element).getA() + ","
@@ -152,14 +146,13 @@ public class MqttMsgHandler implements MessageHandler {
                     assert element instanceof TTTT;
                     Point powerPoint = pointUtil.tempPoint(uid, (TTTT) element);
                     batchPoints.point(powerPoint);
-
+                    time=((TTTT) element).getTimestamp();
                     map.put("sensor_" + uid + "_temperature4", ((TTTT) element).getTimestamp()
                             + "," + ((TTTT) element).getT1() + ","
                             + ((TTTT) element).getT2() + ","
                             + ((TTTT) element).getT3() + ","
                             + ((TTTT) element).getT4());
-                    log.debug("[" + "sensor_" +
-                            uid + "_temperature4]" + ((TTTT) element).getTimestamp()
+                    log.debug("[" + uid + "_temperature4]" + ((TTTT) element).getTimestamp()
                             + "," + ((TTTT) element).getT1() + ","
                             + ((TTTT) element).getT2() + ","
                             + ((TTTT) element).getT3() + ","
@@ -167,7 +160,7 @@ public class MqttMsgHandler implements MessageHandler {
                     break;
                 }
                 default: {
-                    log.error("[Payload Handler]Influx point create from data fail");
+                    log.error("[" + uid + "]Influx point create from data fail");
                     return;
                 }
             }
@@ -179,9 +172,9 @@ public class MqttMsgHandler implements MessageHandler {
             redisUtil.hmset("sensor_" + payload.getUid(), map,expireTime);
             // 更新工作状态为1(实时数据传输模式)
             redisUtil.set("sensor_" + payload.getUid() + "_workMode", 1,expireTime);
-            log.info("[InfluxDB&Redis]Uid:" + payload.getUid() + " influx point and redis write realTime success\n");
+            log.info("[" + payload.getUid() + "] "+time+" write realTime success\n");
         } catch (Exception e) {
-            log.error("[InfluxDB&Redis]Uid:" + payload.getUid() + " Influx point and redis write realTime fail\nErrorMessage:" + e.getMessage());
+            log.error("[" + payload.getUid() + "] Influx point and redis write realTime fail\nErrorMessage:" + e.getMessage());
         }
     }
 
@@ -200,9 +193,7 @@ public class MqttMsgHandler implements MessageHandler {
             switch (payload.getDataMode()) {
                 case "shake": {
                     assert element instanceof MPU6500;
-                    //Point tmpPoint = pointUtil.tempPoint(uid, (MPU6500) element);
                     Point shakePoint = pointUtil.shakePoint(uid, (MPU6500) element);
-                    //batchPoints.point(tmpPoint);
                     batchPoints.point(shakePoint);
                     break;
                 }
@@ -220,7 +211,7 @@ public class MqttMsgHandler implements MessageHandler {
                     break;
                 }
                 default: {
-                    log.error("[Payload Handler]Influx point create from data fail");
+                    log.error("[" + payload.getUid() + "] Influx point create from data fail");
                     return;
                 }
             }
@@ -232,9 +223,9 @@ public class MqttMsgHandler implements MessageHandler {
             influxDB.write(batchPoints);
             // 更新工作状态为0(测试数据每小时传输模式)
             redisUtil.set("sensor_" + payload.getUid() + "_workMode", 0,expireTime);
-            log.info("[InfluxDB&Redis]Influx point and redis write perHour success\n");
+            log.info("[" + payload.getUid() + "] Influx point and redis write perHour success\n");
         } catch (Exception e) {
-            log.error("[InfluxDB&Redis]Influx point and redis write perHour fail\nErrorMessage:" + e.getMessage());
+            log.error("[" + payload.getUid() + "] Influx point and redis write perHour fail\nErrorMessage:" + e.getMessage());
         }
     }
 
@@ -250,9 +241,9 @@ public class MqttMsgHandler implements MessageHandler {
         try {
             // 更新工作状态为2(待机模式)
             redisUtil.set("sensor_" + payload.getUid() + "_workMode", 2,expireTime);
-            log.info("[Redis]Redis write standBy success\n");
+            log.info("[" + payload.getUid() + "] Redis write standBy success\n");
         } catch (Exception e) {
-            log.error("[Redis]Redis write standBy fail\nErrorMessage:" + e.getMessage());
+            log.error("[" + payload.getUid() + "] Redis write standBy fail\nErrorMessage:" + e.getMessage());
         }
     }
 
@@ -268,9 +259,9 @@ public class MqttMsgHandler implements MessageHandler {
         try {
             // 更新工作状态为3(计算模式)
             redisUtil.set("sensor_" + payload.getUid() + "_workMode", 3,expireTime);
-            log.info("[Redis]Redis write calculating success\n");
+            log.info("[" + payload.getUid() + "] Redis write calculating success\n");
         } catch (Exception e) {
-            log.error("[Redis]Redis write calculating fail\nErrorMessage:" + e.getMessage());
+            log.error("[" + payload.getUid() + "] Redis write calculating fail\nErrorMessage:" + e.getMessage());
         }
     }
 
@@ -304,9 +295,9 @@ public class MqttMsgHandler implements MessageHandler {
             }
             // 更新心跳包数据工作状态 expired after 120s
             redisUtil.set("sensor_" + payload.getUid() + "_workMode", work_mode, expireTime);
-            log.info("[Redis]Redis updated by heartbeat data success\n");
+            log.info("[" + payload.getUid() + "] Redis updated by heartbeat data success\n");
         } catch (Exception e) {
-            log.error("[Redis]Redis updated by heartbeat data fail\nErrorMessage:" + e.getMessage());
+            log.error("[" + payload.getUid() + "] Redis updated by heartbeat data fail\nErrorMessage:" + e.getMessage());
         }
     }
 }
