@@ -3,6 +3,9 @@ package com.plantserver.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Getter
 @Setter
 public class VAPE extends BytePayload {
@@ -13,10 +16,15 @@ public class VAPE extends BytePayload {
     public float e; //the data of electric energy value the unit is (Kwh)
 
     VAPE(byte[] input) throws NullPointerException {
-        timestamp = (long) Math.abs(getIntValue(input, 0)) *1000+Math.abs(getIntValue(input, 4));
-        v = getFloatValue(input, 8);
-        a = getFloatValue(input, 12);
-        p = getFloatValue(input, 16);
-        e = getFloatValue(input, 20);
+        timestamp = (long) Math.abs(getIntValue(input, 0)) * 1000 + Math.abs(getIntValue(input, 4));
+        BigDecimal raw_v = BigDecimal.valueOf(getFloatValue(input, 8));
+        BigDecimal raw_a = BigDecimal.valueOf(getFloatValue(input, 12));
+        BigDecimal raw_p = BigDecimal.valueOf(getFloatValue(input, 16));
+        BigDecimal raw_e = BigDecimal.valueOf(getFloatValue(input, 20));
+
+        v = raw_v.setScale(3, RoundingMode.DOWN).floatValue();
+        a = raw_a.setScale(3, RoundingMode.DOWN).floatValue();
+        p = raw_p.setScale(3, RoundingMode.DOWN).floatValue();
+        e = raw_e.setScale(3, RoundingMode.DOWN).floatValue();
     }
 }
