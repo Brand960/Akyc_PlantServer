@@ -5,17 +5,30 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
+<<<<<<< HEAD
         <version>2.1.6.RELEASE</version>
+=======
+        <version>2.2.2.RELEASE</version>
+>>>>>>> akycMaster
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com</groupId>
     <artifactId>plantserver</artifactId>
+<<<<<<< HEAD
     <version>0.0.5-SNAPSHOT</version>
     <name>plantserver</name>
     <description>Demo project for PlantServer</description>
 
     <properties>
         <java.version>1.8</java.version>
+=======
+    <version>1.0</version>
+    <name>plantsurv_server</name>
+    <description>PlantServer</description>
+
+    <properties>
+        <java.version>11</java.version>
+>>>>>>> akycMaster
         <maven.test.skip>true</maven.test.skip>
     </properties>
 
@@ -24,12 +37,16 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web-services</artifactId>
         </dependency>
+<<<<<<< HEAD
 
+=======
+>>>>>>> akycMaster
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+<<<<<<< HEAD
 
         <dependency>
             <groupId>log4j</groupId>
@@ -69,6 +86,63 @@
             <groupId>org.springframework.integration</groupId>
             <artifactId>spring-integration-mqtt</artifactId>
             <version>5.1.6.RELEASE</version>
+=======
+        <dependency>
+            <groupId>org.influxdb</groupId>
+            <artifactId>influxdb-java</artifactId>
+            <version>2.16</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.integration</groupId>
+            <artifactId>spring-integration-mqtt</artifactId>
+            <version>5.2.2.RELEASE</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.paho</groupId>
+                    <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.2.1.RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.10</version>
+            <scope>provided</scope>
+>>>>>>> akycMaster
         </dependency>
     </dependencies>
 
@@ -77,6 +151,27 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+<<<<<<< HEAD
+=======
+                <configuration>
+                    <mainClass>com.plantserver.PlantserverApplication</mainClass>
+                    <layout>ZIP</layout>
+                    <!--去除在生产环境中不变的依赖-->
+                    <includes>
+                        <include>
+                            <groupId>non-exists</groupId>
+                            <artifactId>non-exists</artifactId>
+                        </include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+>>>>>>> akycMaster
             </plugin>
         </plugins>
     </build>

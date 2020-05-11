@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 server:
   session-timeout: 
   #    tomcat:
@@ -29,3 +30,10 @@ spring:
     default:
       topic: 
     completionTimeout: 3000
+=======
+spring:
+  profiles:
+    active: pro
+  redis:
+    expireTime: 300
+>>>>>>> akycMaster
