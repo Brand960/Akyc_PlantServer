@@ -1,0 +1,20 @@
+# yaml 配置实例
+version: '3.4'
+services:
+  mqtt:
+    image: eclipse-mosquitto
+    container_name: akyc_mqtt
+    ports:
+      - "1883:1883"
+  redis:
+    image: redis
+    container_name: akyc_redis
+    ports:
+      - "6379:6379"
+  edge:
+    build: .
+    container_name: akyc_edge
+    links:
+      - redis
+      - mqtt
+

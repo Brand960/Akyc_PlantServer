@@ -1,0 +1,5 @@
+south:
+  raspTopic : "safercon/ResponseTopic"
+north:
+  saferconHost : "safercon.com"
+  saferconTopic : "safercon/test"
