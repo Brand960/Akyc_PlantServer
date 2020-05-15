@@ -17,4 +17,5 @@ services:
     links:
       - redis
       - mqtt
-
+    volumes:
+      - ./log:/home/app/log

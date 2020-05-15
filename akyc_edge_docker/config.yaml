@@ -1,5 +1,7 @@
 south:
   raspTopic : "safercon/ResponseTopic"
+  raspExpire : 
+  checkInterval: 10
 north:
   saferconHost : "safercon.com"
   saferconTopic : "safercon/test"
