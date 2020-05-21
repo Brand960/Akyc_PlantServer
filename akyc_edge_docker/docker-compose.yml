@@ -1,21 +1,36 @@
+
 # yaml 配置实例
 version: '3.4'
 services:
   mqtt:
-    image: eclipse-mosquitto
-    container_name: akyc_mqtt
+    restart: always
+    image: emqx/emqx
+    container_name: emqx
     ports:
       - "1883:1883"
+      - "18083:18083"
+      - "9001:9001"
+    volumes:
+     # - ./config:/etc
+      - ./log:/opt/emqx/log
+    environment:
+      - TZ=Asia/Shanghai
+      - EMQX_LOG__LEVEL=notice
+      - EMQX_NAME=raspberry
   redis:
+    restart: always
     image: redis
-    container_name: akyc_redis
+    container_name: redis
     ports:
       - "6379:6379"
   edge:
     build: .
-    container_name: akyc_edge
+    restart: always
+    container_name: edge
     links:
       - redis
       - mqtt
     volumes:
       - ./log:/home/app/log
+    environment:
+      - TZ=Asia/Shanghai
